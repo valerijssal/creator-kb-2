@@ -16,6 +16,10 @@
 
 body {
   background: var(--bg);
+  background-image:
+    linear-gradient(rgba(0,82,204,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,82,204,0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
   color: var(--text);
   font-family: 'Inter', -apple-system, system-ui, sans-serif;
   min-height: 100vh;
