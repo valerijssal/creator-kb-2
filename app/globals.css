@@ -18,6 +18,8 @@
 
 body {
   background: var(--bg);
+  background-image: radial-gradient(circle, rgba(35,131,226,0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
   color: var(--text);
   font-family: 'Inter', system-ui, sans-serif;
   min-height: 100vh;
