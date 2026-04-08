@@ -95,7 +95,7 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
         .ProseMirror h2 { font-size: 18px; font-weight: 600; margin: 20px 0 10px; }
         .ProseMirror h3 { font-size: 15px; font-weight: 600; margin: 16px 0 8px; }
         .ProseMirror p { margin-bottom: 12px; }
-        .ProseMirror ul, .ProseMirror ol { margin: 10px 0 14px 24px; }
+        .ProseMirror ul { margin: 10px 0 14px 24px; list-style-type: disc; } .ProseMirror ol { margin: 10px 0 14px 24px; list-style-type: decimal; }
         .ProseMirror li { margin-bottom: 4px; }
         .ProseMirror a { color: var(--accent); }
         .ProseMirror code { background: var(--bg-3); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
