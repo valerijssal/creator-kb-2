@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #141720;
-  --bg-2: #1c2030;
-  --bg-3: #242838;
-  --border: #2e3348;
-  --text: #e2e4ed;
-  --text-muted: #6b7280;
+  --bg: #2c3140;
+  --bg-2: #353c4e;
+  --bg-3: #3e4658;
+  --border: #4a5268;
+  --text: #e8eaf0;
+  --text-muted: #8e97aa;
   --accent: #b4f000;
   --accent-light: rgba(180,240,0,0.08);
   --danger: #ff4d6a;
@@ -17,8 +17,8 @@
 body {
   background: var(--bg);
   background-image:
-    linear-gradient(rgba(180,240,0,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(180,240,0,0.025) 1px, transparent 1px);
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
   background-size: 32px 32px;
   color: var(--text);
   font-family: 'Inter', system-ui, sans-serif;
