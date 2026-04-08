@@ -6,6 +6,7 @@ const octokit = new Octokit({
 
 const owner = process.env.GITHUB_OWNER!;
 const repo = process.env.GITHUB_REPO!;
+const appRepo = process.env.GITHUB_APP_REPO || 'creator-kb-2';
 
 export const SPACES: Record<string, string> = {
   'media-cube': 'Confluence Export - MediaCube',
@@ -28,15 +29,24 @@ export async function getSpaceFiles(spaceSlug: string): Promise<{ name: string; 
   if (!folder) return [];
 
   try {
-    const { data } = await octokit.repos.getContent({ owner, repo, path: folder });
-    if (!Array.isArray(data)) return [];
+    const [contentsRes, titlesRes] = await Promise.all([
+      octokit.repos.getContent({ owner, repo, path: folder }),
+      octokit.repos.getContent({ owner, repo: appRepo, path: 'public/titles.json' }),
+    ]);
 
-    return data
+    let titles: Record<string, string> = {};
+    if ('content' in titlesRes.data) {
+      titles = JSON.parse(Buffer.from(titlesRes.data.content, 'base64').toString('utf-8'));
+    }
+
+    if (!Array.isArray(contentsRes.data)) return [];
+
+    return contentsRes.data
       .filter((f) => f.type === 'file' && f.name.endsWith('.html') && f.name !== 'index.html')
       .map((f) => ({
         name: f.name,
         path: f.path,
-        title: fileNameToTitle(f.name),
+        title: titles[f.name] || fileNameToTitle(f.name),
       }))
       .sort((a, b) => a.title.localeCompare(b.title));
   } catch (err) {
@@ -93,7 +103,6 @@ export async function moveFile(oldPath: string, newPath: string, sha: string): P
   try {
     const file = await getFileContent(oldPath);
     if (!file) return false;
-
     await octokit.repos.createOrUpdateFileContents({
       owner,
       repo,
@@ -101,7 +110,6 @@ export async function moveFile(oldPath: string, newPath: string, sha: string): P
       message: `Move ${oldPath} to ${newPath}`,
       content: Buffer.from(file.content).toString('base64'),
     });
-
     await octokit.repos.deleteFile({
       owner,
       repo,
@@ -109,7 +117,6 @@ export async function moveFile(oldPath: string, newPath: string, sha: string): P
       message: `Remove original after move`,
       sha,
     });
-
     return true;
   } catch {
     return false;
