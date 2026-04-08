@@ -63,7 +63,7 @@ export default function Home() {
         <button onClick={handleLogout} style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer', padding: '6px 14px', borderRadius: '4px' }}>Sign out</button>
       </header>
 
-      <main style={{ maxWidth: '680px', margin: '0 auto', padding: '64px 48px 80px' }}>
+      <main style={{ maxWidth: '680px', margin: '0 auto', padding: '64px 48px 80px', width: '100%' }}>
         <div style={{ marginBottom: '28px' }}>
           <div style={{ display: 'inline-block', background: 'var(--accent)', border: 'none', color: '#ffffff', fontSize: '11px', fontWeight: '600', letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '20px', marginBottom: '20px' }}>
             Knowledge Base
@@ -124,7 +124,7 @@ export default function Home() {
           ))}
         </div>
 
-        <div style={{ marginTop: '48px', paddingTop: '24px', borderTop: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ marginTop: '48px', paddingTop: '24px', paddingBottom: '48px', borderTop: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
           <span>Previously on Confluence · Migrated March 2026</span>
           <span>5 spaces · 3,000+ docs</span>
         </div>
