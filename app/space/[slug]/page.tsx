@@ -75,6 +75,20 @@ function TreeNode({ node, slug, depth = 0, search }: { node: PageNode; slug: str
           {node.children!.map(child => <TreeNode key={child.file} node={child} slug={slug} depth={depth + 1} search={search} />)}
         </div>
       )}
+    {showCreate && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '32px', width: '420px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: '600' }}>New page</h3>
+            <input type="text" placeholder="Page title" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCreate()} autoFocus
+              style={{ width: '100%', padding: '10px 14px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontSize: '14px', outline: 'none', marginBottom: '16px' }}
+            />
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button onClick={() => { setShowCreate(false); setNewTitle(''); }} style={{ padding: '8px 16px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
+              <button onClick={handleCreate} disabled={!newTitle.trim() || creating} style={{ padding: '8px 16px', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: '500', cursor: newTitle.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }}>{creating ? 'Creating...' : 'Create'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -86,6 +100,26 @@ export default function SpacePage({ params }: { params: Promise<{ slug: string }
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [total, setTotal] = useState(0);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [creating, setCreating] = useState(false);
+
+  const handleCreate = async () => {
+    if (!newTitle.trim()) return;
+    setCreating(true);
+    const res = await fetch('/api/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ space: slug, title: newTitle.trim() }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setShowCreate(false);
+      setNewTitle('');
+      router.push('/doc/' + slug + '/' + encodeURIComponent(data.fileName));
+    }
+    setCreating(false);
+  };
 
   useEffect(() => {
     fetch('/api/tree?space=' + slug)
@@ -103,6 +137,7 @@ export default function SpacePage({ params }: { params: Promise<{ slug: string }
         <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>← Home</button>
         <span style={{ color: 'var(--border)' }}>›</span>
         <span style={{ fontWeight: '600', fontSize: '14px' }}>{SPACE_LABELS[slug]}</span>
+        <button onClick={() => setShowCreate(true)} style={{ marginLeft: 'auto', padding: '6px 14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ New page</button>
       </header>
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '48px 40px' }}>
         <h1 style={{ fontSize: '26px', fontWeight: '700', marginBottom: '4px' }}>{SPACE_LABELS[slug]}</h1>
@@ -116,6 +151,20 @@ export default function SpacePage({ params }: { params: Promise<{ slug: string }
           <div>{tree.map(n => <TreeNode key={n.file} node={n} slug={slug} depth={0} search={search} />)}</div>
         )}
       </main>
+    {showCreate && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '32px', width: '420px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+            <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: '600' }}>New page</h3>
+            <input type="text" placeholder="Page title" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCreate()} autoFocus
+              style={{ width: '100%', padding: '10px 14px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontSize: '14px', outline: 'none', marginBottom: '16px' }}
+            />
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button onClick={() => { setShowCreate(false); setNewTitle(''); }} style={{ padding: '8px 16px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
+              <button onClick={handleCreate} disabled={!newTitle.trim() || creating} style={{ padding: '8px 16px', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: '500', cursor: newTitle.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }}>{creating ? 'Creating...' : 'Create'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

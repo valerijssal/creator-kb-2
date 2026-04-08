@@ -2,6 +2,11 @@
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
+import TextStyle from '@tiptap/extension-text-style';
+import Color from '@tiptap/extension-color';
+import Highlight from '@tiptap/extension-highlight';
+import TextAlign from '@tiptap/extension-text-align';
+import Underline from '@tiptap/extension-underline';
 import { useEffect } from 'react';
 
 interface RichEditorProps {
@@ -11,7 +16,15 @@ interface RichEditorProps {
 
 export default function RichEditor({ content, onChange }: RichEditorProps) {
   const editor = useEditor({
-    extensions: [StarterKit, Link.configure({ openOnClick: false })],
+    extensions: [
+      StarterKit,
+      Link.configure({ openOnClick: false }),
+      TextStyle,
+      Color,
+      Highlight.configure({ multicolor: true }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Underline,
+    ],
     content,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
   });
@@ -22,28 +35,60 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
 
   if (!editor) return null;
 
-  const btn = (action: () => void, label: string, active?: boolean) => (
-    <button onClick={action} title={label} style={{ padding: '4px 10px', background: active ? 'var(--accent-light)' : 'none', color: active ? 'var(--accent)' : 'var(--text-muted)', border: 'none', borderRadius: '4px', fontSize: '12px', fontWeight: '500', cursor: 'pointer' }}>
+  const btn = (action: () => void, label: string, active?: boolean, danger?: boolean) => (
+    <button onClick={action} title={label} style={{
+      padding: '4px 8px', background: active ? 'var(--accent-light)' : 'none',
+      color: danger ? 'var(--danger)' : active ? 'var(--accent)' : 'var(--text-muted)',
+      border: 'none', borderRadius: '4px', fontSize: '12px', fontWeight: '500',
+      cursor: 'pointer', whiteSpace: 'nowrap',
+    }}>
       {label}
     </button>
   );
 
+  const divider = () => (
+    <span style={{ width: '1px', height: '16px', background: 'var(--border)', margin: '0 4px', flexShrink: 0 }} />
+  );
+
   return (
     <div style={{ border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
-      <div style={{ display: 'flex', gap: '2px', flexWrap: 'wrap', padding: '8px 12px', borderBottom: '1px solid var(--border)', background: 'var(--bg-2)' }}>
-        {btn(() => editor.chain().focus().toggleBold().run(), 'Bold', editor.isActive('bold'))}
-        {btn(() => editor.chain().focus().toggleItalic().run(), 'Italic', editor.isActive('italic'))}
+      {/* Toolbar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap', padding: '8px 12px', borderBottom: '1px solid var(--border)', background: 'var(--bg-2)' }}>
+        {btn(() => editor.chain().focus().toggleBold().run(), 'B', editor.isActive('bold'))}
+        {btn(() => editor.chain().focus().toggleItalic().run(), 'I', editor.isActive('italic'))}
+        {btn(() => editor.chain().focus().toggleUnderline().run(), 'U', editor.isActive('underline'))}
+        {divider()}
         {btn(() => editor.chain().focus().toggleHeading({ level: 1 }).run(), 'H1', editor.isActive('heading', { level: 1 }))}
         {btn(() => editor.chain().focus().toggleHeading({ level: 2 }).run(), 'H2', editor.isActive('heading', { level: 2 }))}
         {btn(() => editor.chain().focus().toggleHeading({ level: 3 }).run(), 'H3', editor.isActive('heading', { level: 3 }))}
+        {divider()}
         {btn(() => editor.chain().focus().toggleBulletList().run(), '• List', editor.isActive('bulletList'))}
         {btn(() => editor.chain().focus().toggleOrderedList().run(), '1. List', editor.isActive('orderedList'))}
+        {divider()}
+        {btn(() => editor.chain().focus().setTextAlign('left').run(), 'Left', editor.isActive({ textAlign: 'left' }))}
+        {btn(() => editor.chain().focus().setTextAlign('center').run(), 'Center', editor.isActive({ textAlign: 'center' }))}
+        {btn(() => editor.chain().focus().setTextAlign('right').run(), 'Right', editor.isActive({ textAlign: 'right' }))}
+        {divider()}
+        {btn(() => editor.chain().focus().toggleHighlight({ color: '#fef08a' }).run(), 'Highlight', editor.isActive('highlight'))}
         {btn(() => editor.chain().focus().toggleCodeBlock().run(), 'Code', editor.isActive('codeBlock'))}
         {btn(() => editor.chain().focus().toggleBlockquote().run(), 'Quote', editor.isActive('blockquote'))}
+        {divider()}
+        {/* Text color picker */}
+        <label title="Text color" style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
+          A
+          <input type="color" defaultValue="#172b4d"
+            onChange={e => editor.chain().focus().setColor(e.target.value).run()}
+            style={{ width: '16px', height: '16px', border: 'none', padding: 0, cursor: 'pointer', borderRadius: '2px' }}
+          />
+        </label>
+        {divider()}
         {btn(() => editor.chain().focus().undo().run(), '↩')}
         {btn(() => editor.chain().focus().redo().run(), '↪')}
       </div>
-      <EditorContent editor={editor} style={{ minHeight: '60vh', padding: '20px 24px', background: 'var(--bg)' }} />
+
+      {/* Editor area */}
+      <EditorContent editor={editor} style={{ minHeight: '60vh', padding: '20px 24px', background: 'var(--bg-2)' }} />
+
       <style>{`
         .ProseMirror { outline: none; font-size: 15px; line-height: 1.7; color: var(--text); }
         .ProseMirror h1 { font-size: 22px; font-weight: 700; margin: 24px 0 12px; }
@@ -54,8 +99,9 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
         .ProseMirror li { margin-bottom: 4px; }
         .ProseMirror a { color: var(--accent); }
         .ProseMirror code { background: var(--bg-3); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
-        .ProseMirror pre { background: var(--bg-2); padding: 14px; border-radius: 6px; margin: 12px 0; }
+        .ProseMirror pre { background: var(--bg-3); padding: 14px; border-radius: 6px; margin: 12px 0; }
         .ProseMirror blockquote { border-left: 3px solid var(--border); padding-left: 14px; color: var(--text-muted); margin: 12px 0; }
+        .ProseMirror mark { border-radius: 2px; padding: 0 2px; }
         .ProseMirror p.is-editor-empty:first-child::before { content: 'Start editing...'; color: var(--text-muted); pointer-events: none; float: left; height: 0; }
       `}</style>
     </div>
