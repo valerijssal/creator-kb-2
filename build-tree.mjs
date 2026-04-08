@@ -30,10 +30,24 @@ for (const space of spaces) {
     pages[file] = { file, title, parent };
   }
 
-  // Null out parents that don't exist in this space
+  // Null out parents that do not exist in this space
   for (const page of Object.values(pages)) {
     if (page.parent && !(page.parent in pages)) {
       page.parent = null;
+    }
+  }
+
+  // Detect and break cycles
+  for (const file of Object.keys(pages)) {
+    const visited = new Set();
+    let current = file;
+    while (current) {
+      if (visited.has(current)) {
+        pages[current].parent = null;
+        break;
+      }
+      visited.add(current);
+      current = pages[current] ? pages[current].parent : null;
     }
   }
 
