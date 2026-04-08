@@ -20,23 +20,26 @@ export default function Home() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <header style={{
-        borderBottom: '1px solid var(--border)',
-        padding: '0 40px',
-        height: '60px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        background: 'var(--bg-2)',
+        borderBottom: '1px solid var(--border)', padding: '0 40px',
+        height: '60px', display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between', background: 'var(--bg-2)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '28px', height: '28px', background: 'var(--accent)', borderRadius: '6px' }} />
           <span style={{ fontWeight: '600', fontSize: '15px' }}>Creator Services KB</span>
         </div>
-        <button onClick={handleLogout} style={{
-          background: 'none', border: '1px solid var(--border)',
-          color: 'var(--text-muted)', padding: '6px 14px',
-          borderRadius: '6px', fontSize: '13px', cursor: 'pointer',
-        }}>Sign out</button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={() => router.push('/search')} style={{
+            background: 'var(--accent)', border: 'none', color: '#0f0f0f',
+            padding: '6px 16px', borderRadius: '6px', fontSize: '13px',
+            fontWeight: '600', cursor: 'pointer',
+          }}>🔍 AI Search</button>
+          <button onClick={handleLogout} style={{
+            background: 'none', border: '1px solid var(--border)',
+            color: 'var(--text-muted)', padding: '6px 14px',
+            borderRadius: '6px', fontSize: '13px', cursor: 'pointer',
+          }}>Sign out</button>
+        </div>
       </header>
 
       <main style={{ maxWidth: '900px', margin: '0 auto', padding: '60px 40px' }}>
