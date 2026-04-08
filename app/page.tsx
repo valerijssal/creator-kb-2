@@ -55,7 +55,7 @@ export default function Home() {
 
   return (
     <div style={{ minHeight: '100vh' }}>
-      <header style={{ borderBottom: '1px solid var(--border)', padding: '0 48px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-2)', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+      <header style={{ borderBottom: '1px solid var(--border)', padding: '0 48px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ffffff', boxShadow: '0 2px 12px rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ width: '26px', height: '26px', background: 'var(--accent)', borderRadius: '4px' }} />
           <span style={{ fontWeight: '700', fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text)' }}>Creator Services</span>
@@ -63,7 +63,7 @@ export default function Home() {
         <button onClick={handleLogout} style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer', padding: '6px 14px', borderRadius: '4px' }}>Sign out</button>
       </header>
 
-      <main style={{ maxWidth: '760px', margin: '0 auto', padding: '72px 48px 80px' }}>
+      <main style={{ maxWidth: '680px', margin: '0 auto', padding: '64px 48px 80px' }}>
         <div style={{ marginBottom: '28px' }}>
           <div style={{ display: 'inline-block', background: 'var(--accent)', border: 'none', color: '#ffffff', fontSize: '11px', fontWeight: '600', letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '20px', marginBottom: '20px' }}>
             Knowledge Base
