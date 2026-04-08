@@ -44,7 +44,7 @@ function buildTree(pages: Record<string, PageNode>): PageNode[] {
 
 function TreeNode({ node, slug, depth = 0, search }: { node: PageNode; slug: string; depth?: number; search: string }) {
   const router = useRouter();
-  const [open, setOpen] = useState(depth < 1);
+  const [open, setOpen] = useState(false);
   const has = node.children && node.children.length > 0;
   const title = cleanTitle(node.title);
   const matches = (n: PageNode): boolean =>
