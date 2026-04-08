@@ -75,20 +75,6 @@ function TreeNode({ node, slug, depth = 0, search }: { node: PageNode; slug: str
           {node.children!.map(child => <TreeNode key={child.file} node={child} slug={slug} depth={depth + 1} search={search} />)}
         </div>
       )}
-    {showCreate && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '32px', width: '420px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
-            <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: '600' }}>New page</h3>
-            <input type="text" placeholder="Page title" value={newTitle} onChange={e => setNewTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCreate()} autoFocus
-              style={{ width: '100%', padding: '10px 14px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontSize: '14px', outline: 'none', marginBottom: '16px' }}
-            />
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setShowCreate(false); setNewTitle(''); }} style={{ padding: '8px 16px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
-              <button onClick={handleCreate} disabled={!newTitle.trim() || creating} style={{ padding: '8px 16px', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: '500', cursor: newTitle.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }}>{creating ? 'Creating...' : 'Create'}</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -103,6 +89,16 @@ export default function SpacePage({ params }: { params: Promise<{ slug: string }
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/tree?space=' + slug)
+      .then(r => r.json())
+      .then(data => {
+        setTree(buildTree(data));
+        setTotal(Object.keys(data).length);
+        setLoading(false);
+      });
+  }, [slug]);
 
   const handleCreate = async () => {
     if (!newTitle.trim()) return;
@@ -121,16 +117,6 @@ export default function SpacePage({ params }: { params: Promise<{ slug: string }
     setCreating(false);
   };
 
-  useEffect(() => {
-    fetch('/api/tree?space=' + slug)
-      .then(r => r.json())
-      .then(data => {
-        setTree(buildTree(data));
-        setTotal(Object.keys(data).length);
-        setLoading(false);
-      });
-  }, [slug]);
-
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <header style={{ borderBottom: '1px solid var(--border)', padding: '0 40px', height: '56px', display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg)' }}>
@@ -139,6 +125,7 @@ export default function SpacePage({ params }: { params: Promise<{ slug: string }
         <span style={{ fontWeight: '600', fontSize: '14px' }}>{SPACE_LABELS[slug]}</span>
         <button onClick={() => setShowCreate(true)} style={{ marginLeft: 'auto', padding: '6px 14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ New page</button>
       </header>
+
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '48px 40px' }}>
         <h1 style={{ fontSize: '26px', fontWeight: '700', marginBottom: '4px' }}>{SPACE_LABELS[slug]}</h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '28px' }}>{loading ? 'Loading...' : total + ' documents'}</p>
@@ -151,7 +138,8 @@ export default function SpacePage({ params }: { params: Promise<{ slug: string }
           <div>{tree.map(n => <TreeNode key={n.file} node={n} slug={slug} depth={0} search={search} />)}</div>
         )}
       </main>
-    {showCreate && (
+
+      {showCreate && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
           <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '32px', width: '420px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
             <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: '600' }}>New page</h3>
