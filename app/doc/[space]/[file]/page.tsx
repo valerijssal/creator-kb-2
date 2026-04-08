@@ -59,23 +59,18 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
       .then(data => {
         setContent(data.content || '');
         setSha(data.sha || '');
-        const body = extractBodyContent(data.content || '');
-        setEditContent(body);
+        setEditContent(extractBodyContent(data.content || ''));
         setLoading(false);
-
-        // Try to get real title from titles.json via space page
-        fetch(`/api/files?space=${space}`)
+        fetch(`/api/tree?space=${space}`)
           .then(r => r.json())
-          .then((files: {name: string; title: string}[]) => {
-            const match = files.find(f => f.name === fileName);
-            if (match) setTitle(match.title);
+          .then((tree: Record<string, {title: string}>) => {
+            if (tree[fileName]) setTitle(tree[fileName].title);
           });
       });
   }, [space, fileName]);
 
   const handleSave = async () => {
     setSaving(true);
-    // Wrap edited content back in minimal HTML structure
     const fullHtml = `<!DOCTYPE html><html><head><title>${title}</title></head><body>${editContent}</body></html>`;
     const res = await fetch('/api/files', {
       method: 'PUT',
@@ -94,21 +89,13 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   };
 
   const handleDelete = async () => {
-    const res = await fetch('/api/files', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: getFilePath(space, fileName), sha }),
-    });
+    const res = await fetch('/api/files', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: getFilePath(space, fileName), sha }) });
     if (res.ok) router.push(`/space/${space}`);
   };
 
   const handleMove = async () => {
     if (!moveTarget) return;
-    const res = await fetch('/api/files', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ oldPath: getFilePath(space, fileName), newSpaceSlug: moveTarget, sha, fileName }),
-    });
+    const res = await fetch('/api/files', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ oldPath: getFilePath(space, fileName), newSpaceSlug: moveTarget, sha, fileName }) });
     if (res.ok) router.push(`/space/${moveTarget}`);
   };
 
@@ -116,12 +103,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      <header style={{
-        borderBottom: '1px solid var(--border)', padding: '0 40px',
-        height: '60px', display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between', background: 'var(--bg-2)',
-        position: 'sticky', top: 0, zIndex: 10,
-      }}>
+      <header style={{ borderBottom: '1px solid var(--border)', padding: '0 40px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg)', position: 'sticky', top: 0, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-muted)', overflow: 'hidden' }}>
           <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', whiteSpace: 'nowrap' }}>Home</button>
           <span>›</span>
@@ -129,80 +111,80 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
           <span>›</span>
           <span style={{ color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</span>
         </div>
-
-        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-          {actionMsg && <span style={{ color: 'var(--accent)', fontSize: '13px', alignSelf: 'center', marginRight: '8px' }}>{actionMsg}</span>}
+        <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
+          {actionMsg && <span style={{ color: 'var(--accent)', fontSize: '13px' }}>{actionMsg}</span>}
           {!editing ? (
             <>
-              <button onClick={() => setEditing(true)} style={{ padding: '6px 14px', background: 'var(--accent)', color: '#0f0f0f', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Edit</button>
-              <button onClick={() => setShowMoveModal(true)} style={{ padding: '6px 14px', background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>Move</button>
-              <button onClick={() => setShowDeleteConfirm(true)} style={{ padding: '6px 14px', background: 'none', color: 'var(--danger)', border: '1px solid var(--danger)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>Delete</button>
+              <button onClick={() => setEditing(true)} style={{ padding: '5px 14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>Edit</button>
+              <button onClick={() => setShowMoveModal(true)} style={{ padding: '5px 12px', background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>Move</button>
+              <button onClick={() => setShowDeleteConfirm(true)} style={{ padding: '5px 12px', background: 'none', color: 'var(--danger)', border: '1px solid var(--danger)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>Delete</button>
             </>
           ) : (
             <>
-              <button onClick={handleSave} disabled={saving} style={{ padding: '6px 14px', background: 'var(--accent)', color: '#0f0f0f', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>{saving ? 'Saving...' : 'Save'}</button>
-              <button onClick={() => { setEditing(false); setEditContent(extractBodyContent(content)); }} style={{ padding: '6px 14px', background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleSave} disabled={saving} style={{ padding: '5px 14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>{saving ? 'Saving...' : 'Save'}</button>
+              <button onClick={() => { setEditing(false); setEditContent(extractBodyContent(content)); }} style={{ padding: '5px 12px', background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>Cancel</button>
             </>
           )}
         </div>
       </header>
 
-      <main style={{ maxWidth: '860px', margin: '0 auto', padding: '48px 40px' }}>
+      <main style={{ maxWidth: '760px', margin: '0 auto', padding: '48px 40px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '28px', color: 'var(--text)' }}>{title}</h1>
         {loading ? (
           <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
         ) : editing ? (
           <RichEditor content={editContent} onChange={setEditContent} />
         ) : (
-          <div className="doc-content" dangerouslySetInnerHTML={{ __html: bodyContent }} style={{ lineHeight: '1.7', fontSize: '15px' }} />
+          <div className="doc-content" dangerouslySetInnerHTML={{ __html: bodyContent }} />
         )}
       </main>
 
       {showMoveModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '32px', width: '420px' }}>
-            <h3 style={{ marginBottom: '16px', fontSize: '16px' }}>Move to another space</h3>
-            <select value={moveTarget} onChange={e => setMoveTarget(e.target.value)} style={{ width: '100%', padding: '10px', background: 'var(--bg-3)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontSize: '14px', marginBottom: '16px' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '28px', width: '400px', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
+            <h3 style={{ marginBottom: '16px', fontSize: '15px', fontWeight: '600' }}>Move to another space</h3>
+            <select value={moveTarget} onChange={e => setMoveTarget(e.target.value)} style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontSize: '13px', marginBottom: '16px' }}>
               <option value="">Select space...</option>
               {ALL_SPACES.filter(s => s !== space).map(s => <option key={s} value={s}>{SPACE_LABELS[s]}</option>)}
             </select>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowMoveModal(false)} style={{ padding: '8px 16px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
-              <button onClick={handleMove} disabled={!moveTarget} style={{ padding: '8px 16px', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#0f0f0f', fontWeight: '600', cursor: moveTarget ? 'pointer' : 'not-allowed', fontSize: '13px' }}>Move</button>
+              <button onClick={() => setShowMoveModal(false)} style={{ padding: '7px 14px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
+              <button onClick={handleMove} disabled={!moveTarget} style={{ padding: '7px 14px', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: '500', cursor: moveTarget ? 'pointer' : 'not-allowed', fontSize: '13px' }}>Move</button>
             </div>
           </div>
         </div>
       )}
 
       {showDeleteConfirm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '32px', width: '380px' }}>
-            <h3 style={{ marginBottom: '8px', fontSize: '16px' }}>Delete this document?</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px' }}>This cannot be undone.</p>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '28px', width: '360px', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
+            <h3 style={{ marginBottom: '8px', fontSize: '15px', fontWeight: '600' }}>Delete this document?</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '20px' }}>This cannot be undone.</p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowDeleteConfirm(false)} style={{ padding: '8px 16px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
-              <button onClick={handleDelete} style={{ padding: '8px 16px', background: 'var(--danger)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}>Delete</button>
+              <button onClick={() => setShowDeleteConfirm(false)} style={{ padding: '7px 14px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
+              <button onClick={handleDelete} style={{ padding: '7px 14px', background: 'var(--danger)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: '500', cursor: 'pointer', fontSize: '13px' }}>Delete</button>
             </div>
           </div>
         </div>
       )}
 
       <style>{`
-        .doc-content h1, .doc-content h2, .doc-content h3 { color: var(--text); margin: 28px 0 12px; font-weight: 600; line-height: 1.3; }
-        .doc-content h1 { font-size: 24px; }
-        .doc-content h2 { font-size: 20px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-        .doc-content h3 { font-size: 16px; }
-        .doc-content p { margin-bottom: 14px; color: var(--text); }
-        .doc-content ul, .doc-content ol { margin: 12px 0 16px 24px; }
-        .doc-content li { margin-bottom: 6px; color: var(--text); }
+        .doc-content { line-height: 1.7; font-size: 15px; color: var(--text); }
+        .doc-content h1 { font-size: 22px; font-weight: 700; margin: 28px 0 12px; }
+        .doc-content h2 { font-size: 18px; font-weight: 600; margin: 24px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+        .doc-content h3 { font-size: 15px; font-weight: 600; margin: 18px 0 8px; }
+        .doc-content p { margin-bottom: 12px; }
+        .doc-content ul, .doc-content ol { margin: 10px 0 14px 22px; }
+        .doc-content li { margin-bottom: 4px; }
         .doc-content a { color: var(--accent); text-decoration: none; }
         .doc-content a:hover { text-decoration: underline; }
         .doc-content strong { font-weight: 600; }
-        .doc-content code { background: var(--bg-3); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 13px; }
-        .doc-content table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-        .doc-content th, .doc-content td { border: 1px solid var(--border); padding: 10px 14px; text-align: left; font-size: 14px; }
-        .doc-content th { background: var(--bg-3); font-weight: 600; }
+        .doc-content code { background: var(--bg-3); padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: monospace; }
+        .doc-content table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+        .doc-content th, .doc-content td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+        .doc-content th { background: var(--bg-2); font-weight: 600; }
         .doc-content img { display: none; }
-        .doc-content .panel, .doc-content .confluence-information-macro { background: var(--bg-3); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 16px 0; }
+        .doc-content .panel, .doc-content .confluence-information-macro { background: var(--bg-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; margin: 14px 0; }
         .doc-content #breadcrumb-section, .doc-content #title-heading, .doc-content .page-metadata, .doc-content .pageSection { display: none; }
       `}</style>
     </div>
