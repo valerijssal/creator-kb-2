@@ -8,12 +8,12 @@ const appRepo = process.env.GITHUB_APP_REPO || 'creator-kb-2';
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const space = searchParams.get('space');
-  if (!space) return NextResponse.json({ error: 'Missing space' }, { status: 400 });
 
   try {
     const { data } = await octokit.repos.getContent({ owner, repo: appRepo, path: 'public/tree.json' });
     if ('content' in data) {
       const tree = JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'));
+      if (space === 'all') return NextResponse.json(tree);
       return NextResponse.json(tree[space] || {});
     }
   } catch (err) {
@@ -22,4 +22,3 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({});
 }
-// Wed Apr  8 15:51:00 CEST 2026

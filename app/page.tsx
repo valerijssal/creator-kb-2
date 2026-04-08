@@ -1,5 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 const SPACES = [
   { slug: 'creator-services', label: 'Creator Services', description: 'Internal processes and team guidelines', icon: '⚙️' },
@@ -9,12 +10,48 @@ const SPACES = [
   { slug: 'creator-services-project', label: 'Creator Services Project', description: 'Project documentation and planning', icon: '🗂️' },
 ];
 
+const SPACE_LABELS: Record<string, string> = Object.fromEntries(SPACES.map(s => [s.slug, s.label]));
+
+interface DocResult {
+  file: string;
+  title: string;
+  space: string;
+}
+
 export default function Home() {
   const router = useRouter();
+  const [query, setQuery] = useState('');
+  const [allDocs, setAllDocs] = useState<DocResult[]>([]);
+  const [results, setResults] = useState<DocResult[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/tree?space=all')
+      .then(r => r.json())
+      .then(data => {
+        const docs: DocResult[] = [];
+        for (const [space, pages] of Object.entries(data as Record<string, Record<string, {file: string; title: string}>>)) {
+          for (const page of Object.values(pages)) {
+            docs.push({ file: page.file, title: page.title, space });
+          }
+        }
+        setAllDocs(docs);
+        setLoaded(true);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!query.trim()) { setResults([]); return; }
+    const q = query.toLowerCase();
+    setResults(allDocs.filter(d => d.title.toLowerCase().includes(q)).slice(0, 20));
+  }, [query, allDocs]);
+
   const handleLogout = async () => {
     await fetch('/api/auth', { method: 'DELETE' });
     router.push('/login');
   };
+
+  const cleanTitle = (t: string) => t.replace(/^[^:]+:\s*/, '').trim();
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -35,23 +72,50 @@ export default function Home() {
             Creator Services<br />
             <span style={{ color: 'var(--accent)' }}>Documentation</span>
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.6 }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.6, marginBottom: '28px' }}>
             Migrated from Confluence · Internal knowledge base for Creator Services
           </p>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              placeholder={loaded ? 'Search across all 3,000+ documents...' : 'Loading index...'}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              disabled={!loaded}
+              style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', fontSize: '14px', outline: 'none' }}
+              onFocus={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+              onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
+            />
+            {query && results.length > 0 && (
+              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', zIndex: 50, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+                {results.map((r, i) => (
+                  <button key={i} onClick={() => router.push('/doc/' + r.space + '/' + encodeURIComponent(r.file))}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '10px 16px', background: 'none', border: 'none', borderBottom: i < results.length - 1 ? '1px solid var(--border)' : 'none', cursor: 'pointer', textAlign: 'left' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-3)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                  >
+                    <span style={{ fontSize: '13px', color: 'var(--text)' }}>{cleanTitle(r.title)}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '12px', whiteSpace: 'nowrap' }}>{SPACE_LABELS[r.space]}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {query && results.length === 0 && loaded && (
+              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 16px', fontSize: '13px', color: 'var(--text-muted)', zIndex: 50 }}>
+                No documents found.
+              </div>
+            )}
+          </div>
         </div>
 
         <div style={{ display: 'grid', gap: '8px' }}>
           {SPACES.map((space, i) => (
-            <button
-              key={space.slug}
-              onClick={() => router.push('/space/' + space.slug)}
+            <button key={space.slug} onClick={() => router.push('/space/' + space.slug)}
               style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '18px 24px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'all 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--bg-3)'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-2)'; }}
             >
-              <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: 'var(--bg-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
-                {space.icon}
-              </div>
+              <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: 'var(--bg-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>{space.icon}</div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: '600', fontSize: '15px', marginBottom: '2px' }}>{space.label}</div>
                 <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{space.description}</div>
