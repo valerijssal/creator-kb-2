@@ -20,18 +20,21 @@ for (const space of spaces) {
 
   for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.html'))) {
     const html = fs.readFileSync(path.join(dir, file), 'utf8');
-
     const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
     const title = titleMatch ? titleMatch[1].replace(/^TSP \+ Mediacube\s*:\s*/i, '').trim() : file;
-
     const breadcrumbLinks = [...html.matchAll(/<a href="([^"]+)"[^>]*>([^<]+)<\/a>/g)];
     const breadcrumbs = breadcrumbLinks
       .filter(m => m[1].endsWith('.html') && !m[1].includes('index'))
       .map(m => ({ href: m[1].replace(/^.*\//, ''), text: m[2].trim() }));
-
     const parent = breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].href : null;
-
     pages[file] = { file, title, parent };
+  }
+
+  // Null out parents that don't exist in this space
+  for (const page of Object.values(pages)) {
+    if (page.parent && !(page.parent in pages)) {
+      page.parent = null;
+    }
   }
 
   result[space.slug] = pages;
