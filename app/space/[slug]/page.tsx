@@ -18,7 +18,7 @@ interface PageNode {
 }
 
 function cleanTitle(title: string): string {
-  return title.replace(/^[^:]+:\s*/,'').trim();
+  return title.replace(/^[^:]+:\s*/, '').trim();
 }
 
 function buildTree(pages: Record<string, PageNode>): PageNode[] {
@@ -60,14 +60,11 @@ function TreeNode({ node, slug, depth = 0, search }: { node: PageNode; slug: str
     <div style={{ marginLeft: depth > 0 ? '24px' : '0' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '1px 0' }}>
         {hasChildren ? (
-          <button
-            onClick={() => setOpen(!open)}
+          <button onClick={() => setOpen(!open)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', color: 'var(--text-muted)', fontSize: '13px', borderRadius: '4px', flexShrink: 0, lineHeight: 1 }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-3)'}
             onMouseLeave={e => e.currentTarget.style.background = 'none'}
-          >
-            {open ? '▼' : '▶'}
-          </button>
+          >{open ? '▼' : '▶'}</button>
         ) : (
           <span style={{ width: '28px', flexShrink: 0 }} />
         )}
