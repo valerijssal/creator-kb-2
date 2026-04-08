@@ -17,55 +17,53 @@ export default function Home() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      {/* Header */}
-      <header style={{ borderBottom: '1px solid var(--border)', padding: '0 48px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg)', position: 'sticky', top: 0, zIndex: 10 }}>
+    <div style={{ minHeight: '100vh' }}>
+      <header style={{ borderBottom: '1px solid var(--border)', padding: '0 48px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '26px', height: '26px', background: 'var(--accent)', borderRadius: '6px' }} />
-          <span style={{ fontWeight: '600', fontSize: '15px', color: 'var(--text)' }}>Creator Services KB</span>
+          <div style={{ width: '26px', height: '26px', background: 'var(--accent)', borderRadius: '4px' }} />
+          <span style={{ fontWeight: '700', fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text)' }}>Creator Services</span>
         </div>
-        <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '13px', cursor: 'pointer' }}>Sign out</button>
+        <button onClick={handleLogout} style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer', padding: '6px 14px', borderRadius: '4px' }}>Sign out</button>
       </header>
 
-      {/* Hero with texture */}
-      <div style={{ position: 'relative', overflow: 'hidden', borderBottom: '1px solid var(--border)', padding: '64px 48px 56px', background: 'linear-gradient(135deg, #e8f4ff 0%, #f8f8f8 50%, #f0ebff 100%)' }}>
-        {/* Decorative circles */}
-        <div style={{ position: 'absolute', top: '-60px', right: '-60px', width: '280px', height: '280px', borderRadius: '50%', background: 'rgba(35,131,226,0.08)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: '-80px', left: '30%', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(120,80,220,0.06)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '20px', left: '60%', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(35,131,226,0.05)', pointerEvents: 'none' }} />
-        {/* Grid dots */}
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(35,131,226,0.12) 1px, transparent 1px)', backgroundSize: '28px 28px', pointerEvents: 'none', opacity: 0.6 }} />
-
-        <div style={{ position: 'relative', maxWidth: '720px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <div style={{ width: '4px', height: '36px', background: 'var(--accent)', borderRadius: '2px' }} />
-            <h1 style={{ fontSize: '38px', fontWeight: '700', color: 'var(--text)', letterSpacing: '-0.5px', lineHeight: 1.1 }}>Knowledge Base</h1>
+      <main style={{ maxWidth: '760px', margin: '0 auto', padding: '72px 48px 80px' }}>
+        <div style={{ marginBottom: '48px' }}>
+          <div style={{ display: 'inline-block', background: 'var(--accent-light)', border: '1px solid rgba(180,240,0,0.25)', color: 'var(--accent)', fontSize: '11px', fontWeight: '600', letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '4px', marginBottom: '20px' }}>
+            Knowledge Base
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '15px', marginLeft: '16px' }}>5 spaces · Creator Services internal docs</p>
+          <h1 style={{ fontSize: '44px', fontWeight: '700', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: '12px' }}>
+            Creator Services<br />
+            <span style={{ color: 'var(--accent)' }}>Documentation</span>
+          </h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.6 }}>
+            Migrated from Confluence · Internal knowledge base for Creator Services
+          </p>
         </div>
-      </div>
 
-      {/* Spaces */}
-      <main style={{ maxWidth: '720px', margin: '0 auto', padding: '40px 48px' }}>
-        <div style={{ display: 'grid', gap: '10px' }}>
-          {SPACES.map((space) => (
+        <div style={{ display: 'grid', gap: '8px' }}>
+          {SPACES.map((space, i) => (
             <button
               key={space.slug}
               onClick={() => router.push('/space/' + space.slug)}
-              style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '20px 24px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '10px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'all 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(35,131,226,0.12)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '18px 24px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--bg-3)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-2)'; }}
             >
-              <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'var(--bg-2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', flexShrink: 0 }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: 'var(--bg-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
                 {space.icon}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: '600', fontSize: '16px', marginBottom: '3px', color: 'var(--text)' }}>{space.label}</div>
-                <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{space.description}</div>
+                <div style={{ fontWeight: '600', fontSize: '15px', marginBottom: '2px' }}>{space.label}</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{space.description}</div>
               </div>
-              <span style={{ color: 'var(--text-muted)', fontSize: '18px', flexShrink: 0 }}>→</span>
+              <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>0{i+1}</div>
             </button>
           ))}
+        </div>
+
+        <div style={{ marginTop: '48px', paddingTop: '24px', borderTop: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
+          <span>Previously on Confluence · Migrated March 2026</span>
+          <span>5 spaces · 3,000+ docs</span>
         </div>
       </main>
     </div>
