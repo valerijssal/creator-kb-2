@@ -58,7 +58,7 @@ export default function Home() {
       <header style={{ borderBottom: '1px solid var(--border)', padding: '0 48px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ffffff', boxShadow: '0 2px 12px rgba(0,0,0,0.1)', position: 'sticky', top: 0, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ width: '26px', height: '26px', background: 'var(--accent)', borderRadius: '4px' }} />
-          <span style={{ fontWeight: '700', fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text)' }}>Creator Services</span>
+          <span style={{ fontWeight: '700', fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)' }}>Creator Services</span>
         </div>
         <button onClick={handleLogout} style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '12px', cursor: 'pointer', padding: '6px 14px', borderRadius: '4px' }}>Sign out</button>
       </header>
@@ -68,7 +68,7 @@ export default function Home() {
           <div style={{ display: 'inline-block', background: 'var(--accent)', border: 'none', color: '#ffffff', fontSize: '11px', fontWeight: '600', letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '20px', marginBottom: '20px' }}>
             Knowledge Base
           </div>
-          <h1 style={{ fontSize: '44px', fontWeight: '700', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: '12px' }}>
+          <h1 style={{ fontSize: '44px', fontWeight: '700', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: '12px', color: '#4a5568' }}>
             Creator Services<br />
             <span style={{ color: 'var(--accent)' }}>Documentation</span>
           </h1>
@@ -82,7 +82,7 @@ export default function Home() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               disabled={!loaded}
-              style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', fontSize: '14px', outline: 'none' }}
+              style={{ width: '100%', padding: '12px 16px', background: '#f0f4ff', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text)', fontSize: '14px', outline: 'none' }}
               onFocus={e => e.currentTarget.style.borderColor = 'var(--accent)'}
               onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
             />
@@ -111,7 +111,7 @@ export default function Home() {
         <div style={{ display: 'grid', gap: '8px' }}>
           {SPACES.map((space, i) => (
             <button key={space.slug} onClick={() => router.push('/space/' + space.slug)}
-              style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '18px 24px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'all 0.15s' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '18px 24px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderLeft: '3px solid var(--accent)', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', width: '100%', transition: 'all 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'var(--bg-3)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,82,204,0.12)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-2)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}
             >
@@ -124,7 +124,7 @@ export default function Home() {
           ))}
         </div>
 
-        <div style={{ marginTop: '48px', paddingTop: '24px', paddingBottom: '48px', borderTop: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ marginTop: '48px', paddingTop: '24px', paddingBottom: '48px', borderTop: '1px solid var(--border)', color: '#b0b8c8', fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
           <span>Previously on Confluence · Migrated March 2026</span>
           <span>5 spaces · 3,000+ docs</span>
         </div>
