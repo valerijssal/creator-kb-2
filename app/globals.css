@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0f0f0f;
+  --bg-2: #1a1a1a;
+  --bg-3: #242424;
+  --border: #2e2e2e;
+  --text: #e8e8e8;
+  --text-muted: #777;
+  --accent: #c8f04a;
+  --accent-dark: #a8d038;
+  --danger: #ff4d4d;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  min-height: 100vh;
+}
