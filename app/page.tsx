@@ -65,7 +65,7 @@ export default function Home() {
 
       <main style={{ maxWidth: '760px', margin: '0 auto', padding: '72px 48px 80px' }}>
         <div style={{ marginBottom: '48px' }}>
-          <div style={{ display: 'inline-block', background: 'var(--accent-light)', border: '1px solid rgba(180,240,0,0.25)', color: 'var(--accent)', fontSize: '11px', fontWeight: '600', letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '4px', marginBottom: '20px' }}>
+          <div style={{ display: 'inline-block', background: 'var(--accent-light)', border: '1px solid rgba(0,82,204,0.3)', color: 'var(--accent)', fontSize: '11px', fontWeight: '600', letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '4px', marginBottom: '20px' }}>
             Knowledge Base
           </div>
           <h1 style={{ fontSize: '44px', fontWeight: '700', lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: '12px' }}>
