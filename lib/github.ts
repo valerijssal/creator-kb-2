@@ -39,7 +39,8 @@ export async function getSpaceFiles(spaceSlug: string): Promise<{ name: string; 
         title: fileNameToTitle(f.name),
       }))
       .sort((a, b) => a.title.localeCompare(b.title));
-  } catch {
+  } catch (err) {
+    console.error('GitHub API error:', err);
     return [];
   }
 }
