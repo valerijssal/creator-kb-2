@@ -7,7 +7,7 @@ const appRepo = process.env.GITHUB_APP_REPO || 'creator-kb-2';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const space = searchParams.get('space');
+  const space = searchParams.get('space') ?? '';
 
   try {
     const { data } = await octokit.repos.getContent({ owner, repo: appRepo, path: 'public/tree.json' });
