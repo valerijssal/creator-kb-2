@@ -2,11 +2,11 @@
 import { useRouter } from 'next/navigation';
 
 const SPACES = [
-  { slug: 'media-cube', label: 'Media Cube', description: 'Partnership docs, workflows, and processes', icon: '📁' },
+  { slug: 'creator-services', label: 'Creator Services - Main', description: 'Internal processes and team guidelines', icon: '⚙️' },
   { slug: 'underscore-talent', label: 'Underscore Talent', description: 'Talent management and creator guides', icon: '🎯' },
-  { slug: 'creator-services', label: 'Creator Services', description: 'Internal processes and team guidelines', icon: '⚙️' },
-  { slug: 'creator-services-project', label: 'Creator Services Project', description: 'Project documentation and planning', icon: '🗂️' },
+  { slug: 'media-cube', label: 'Media Cube', description: 'Partnership docs, workflows, and processes', icon: '📁' },
   { slug: 'content-licensing', label: 'Content Licensing', description: 'Licensing agreements and workflows', icon: '📄' },
+  { slug: 'creator-services-project', label: 'Creator Services Project', description: 'Project documentation and planning', icon: '🗂️' },
 ];
 
 export default function Home() {
