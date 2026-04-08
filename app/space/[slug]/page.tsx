@@ -17,6 +17,10 @@ interface PageNode {
   children?: PageNode[];
 }
 
+function cleanTitle(title: string): string {
+  return title.replace(/^[^:]+:\s*/,'').trim();
+}
+
 function buildTree(pages: Record<string, PageNode>): PageNode[] {
   const nodes: Record<string, PageNode> = {};
   for (const key of Object.keys(pages)) {
@@ -43,37 +47,43 @@ function TreeNode({ node, slug, depth = 0, search }: { node: PageNode; slug: str
   const router = useRouter();
   const [open, setOpen] = useState(depth < 1);
   const hasChildren = node.children && node.children.length > 0;
+  const title = cleanTitle(node.title);
 
   const matchesSearch = (n: PageNode): boolean => {
-    if (n.title.toLowerCase().includes(search.toLowerCase())) return true;
+    if (cleanTitle(n.title).toLowerCase().includes(search.toLowerCase())) return true;
     return n.children?.some(matchesSearch) || false;
   };
 
   if (search && !matchesSearch(node)) return null;
 
   return (
-    <div style={{ marginLeft: depth > 0 ? '20px' : '0' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+    <div style={{ marginLeft: depth > 0 ? '24px' : '0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '1px 0' }}>
         {hasChildren ? (
-          <button onClick={() => setOpen(!open)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', color: 'var(--text-muted)', fontSize: '11px', width: '16px', flexShrink: 0 }}>
-            {open ? '▾' : '▸'}
+          <button
+            onClick={() => setOpen(!open)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', color: 'var(--text-muted)', fontSize: '13px', borderRadius: '4px', flexShrink: 0, lineHeight: 1 }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-3)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'none'}
+          >
+            {open ? '▼' : '▶'}
           </button>
         ) : (
-          <span style={{ width: '16px', flexShrink: 0 }} />
+          <span style={{ width: '28px', flexShrink: 0 }} />
         )}
         <button
-          onClick={() => router.push(`/doc/${slug}/${encodeURIComponent(node.file)}`)}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 8px', background: 'none', border: 'none', borderRadius: '6px', cursor: 'pointer', textAlign: 'left', flex: 1, transition: 'background 0.1s' }}
+          onClick={() => hasChildren ? setOpen(!open) : router.push(`/doc/${slug}/${encodeURIComponent(node.file)}`)}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'none', border: 'none', borderRadius: '6px', cursor: 'pointer', textAlign: 'left', flex: 1, transition: 'background 0.1s' }}
           onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-2)'}
           onMouseLeave={e => e.currentTarget.style.background = 'none'}
         >
-          <span style={{ fontSize: '13px' }}>{hasChildren ? '📂' : '📄'}</span>
-          <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: hasChildren ? '500' : '400' }}>{node.title}</span>
-          {hasChildren && <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: 'auto' }}>{node.children!.length}</span>}
+          <span style={{ fontSize: '14px', flexShrink: 0 }}>{hasChildren ? (open ? '📂' : '📁') : '📄'}</span>
+          <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: hasChildren ? '500' : '400' }}>{title}</span>
+          {hasChildren && <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: 'auto', background: 'var(--bg-3)', padding: '1px 6px', borderRadius: '10px' }}>{node.children!.length}</span>}
         </button>
       </div>
       {hasChildren && open && (
-        <div style={{ borderLeft: '1px solid var(--border)', marginLeft: '7px', paddingLeft: '4px' }}>
+        <div style={{ borderLeft: '2px solid var(--border)', marginLeft: '13px', paddingLeft: '6px' }}>
           {node.children!.map(child => (
             <TreeNode key={child.file} node={child} slug={slug} depth={depth + 1} search={search} />
           ))}
@@ -109,7 +119,6 @@ export default function SpacePage({ params }: { params: Promise<{ slug: string }
         <span style={{ color: 'var(--border)' }}>›</span>
         <span style={{ fontWeight: '600', fontSize: '14px' }}>{SPACE_LABELS[slug]}</span>
       </header>
-
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '48px 40px' }}>
         <h1 style={{ fontSize: '26px', fontWeight: '700', marginBottom: '4px' }}>{SPACE_LABELS[slug]}</h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '28px' }}>
