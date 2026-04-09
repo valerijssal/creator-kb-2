@@ -113,13 +113,13 @@ export default function Home() {
 
       {/* Spaces */}
       <main style={{ maxWidth: '860px', margin: '0 auto', padding: '0 48px 80px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
           {SPACES.map((space, i) => (
             <button
               key={space.slug}
               onClick={() => router.push('/space/' + space.slug)}
               style={{
-                gridColumn: i === 0 ? '1 / -1' : 'auto',
+                
                 display: 'flex', alignItems: 'center', gap: '16px',
                 padding: '20px 24px', background: '#fff',
                 border: '2px solid var(--text)', borderRadius: '12px',
