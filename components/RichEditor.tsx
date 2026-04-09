@@ -31,7 +31,7 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
       Highlight.configure({ multicolor: true }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Underline,
-      Image.configure({ resizable: true }),
+      Image.configure({ inline: false }),
     ],
     content,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
