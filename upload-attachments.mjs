@@ -15,12 +15,16 @@ const SPACE_FOLDERS = [
   { space: 'creator-services', folder: 'Creator Services (main) - Confluence attachments' },
   { space: 'media-cube', folder: 'Media Cube - Confluence - attachments' },
   { space: 'underscore-talent', folder: 'Underscore - Confluence - attachments' },
+  { space: 'content-licensing', folder: 'Licensing - Confluence - attachments ' },
+  { space: 'creator-services-project', folder: 'Creator Services Project - Confluence - attachments' },
 ];
 
 const SPACE_DIRS = {
   'creator-services': 'Confluence Export - Creator Services (main)',
   'media-cube': 'Confluence Export - MediaCube',
   'underscore-talent': 'Confluence Export - Underscore Talent',
+    'content-licensing': 'Confluence Export - Content Licensing',
+    'creator-services-project': 'Confluence Export - Creator Services Project',
 };
 
 const IMAGE_EXTS = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
