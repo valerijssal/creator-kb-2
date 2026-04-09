@@ -7,7 +7,11 @@ import { Color } from '@tiptap/extension-color';
 import { Highlight } from '@tiptap/extension-highlight';
 import { TextAlign } from '@tiptap/extension-text-align';
 import { Underline } from '@tiptap/extension-underline';
-import { useEffect } from 'react';
+import Image from '@tiptap/extension-image';
+import { useEffect, useRef } from 'react';
+
+const CLOUDINARY_CLOUD = 'djsloyzyb';
+const CLOUDINARY_PRESET = 'creator-sercices-knowledge-base';
 
 interface RichEditorProps {
   content: string;
@@ -15,6 +19,9 @@ interface RichEditorProps {
 }
 
 export default function RichEditor({ content, onChange }: RichEditorProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = (require('react') as typeof import('react')).useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -24,6 +31,7 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
       Highlight.configure({ multicolor: true }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Underline,
+      Image.configure({ resizable: true }),
     ],
     content,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -33,12 +41,33 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
     if (editor && content !== editor.getHTML()) editor.commands.setContent(content);
   }, [content]);
 
+  const handleImageUpload = async (file: File) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_PRESET);
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.secure_url && editor) {
+        editor.chain().focus().setImage({ src: data.secure_url }).run();
+      }
+    } catch (err) {
+      console.error('Upload failed:', err);
+    }
+    setUploading(false);
+  };
+
   if (!editor) return null;
 
-  const btn = (action: () => void, label: string, active?: boolean, danger?: boolean) => (
+  const btn = (action: () => void, label: string, active?: boolean) => (
     <button onClick={action} title={label} style={{
       padding: '4px 8px', background: active ? 'var(--accent-light)' : 'none',
-      color: danger ? 'var(--danger)' : active ? 'var(--accent)' : 'var(--text-muted)',
+      color: active ? 'var(--accent)' : 'var(--text-muted)',
       border: 'none', borderRadius: '4px', fontSize: '12px', fontWeight: '500',
       cursor: 'pointer', whiteSpace: 'nowrap',
     }}>
@@ -47,12 +76,11 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
   );
 
   const divider = () => (
-    <span style={{ width: '1px', height: '16px', background: 'var(--border)', margin: '0 4px', flexShrink: 0 }} />
+    <span style={{ width: '1px', height: '16px', background: 'var(--border)', margin: '0 4px', flexShrink: 0, display: 'inline-block' }} />
   );
 
   return (
     <div style={{ border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
-      {/* Toolbar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexWrap: 'wrap', padding: '8px 12px', borderBottom: '1px solid var(--border)', background: 'var(--bg-2)' }}>
         {btn(() => editor.chain().focus().toggleBold().run(), 'B', editor.isActive('bold'))}
         {btn(() => editor.chain().focus().toggleItalic().run(), 'I', editor.isActive('italic'))}
@@ -73,7 +101,6 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
         {btn(() => editor.chain().focus().toggleCodeBlock().run(), 'Code', editor.isActive('codeBlock'))}
         {btn(() => editor.chain().focus().toggleBlockquote().run(), 'Quote', editor.isActive('blockquote'))}
         {divider()}
-        {/* Text color picker */}
         <label title="Text color" style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px', fontSize: '12px', color: 'var(--text-muted)' }}>
           A
           <input type="color" defaultValue="#172b4d"
@@ -82,11 +109,21 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
           />
         </label>
         {divider()}
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          style={{ padding: '4px 8px', background: 'none', color: 'var(--text-muted)', border: 'none', borderRadius: '4px', fontSize: '12px', fontWeight: '500', cursor: 'pointer' }}
+        >
+          {uploading ? 'Uploading...' : '📷 Image'}
+        </button>
+        <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
+          onChange={e => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+        />
+        {divider()}
         {btn(() => editor.chain().focus().undo().run(), '↩')}
         {btn(() => editor.chain().focus().redo().run(), '↪')}
       </div>
 
-      {/* Editor area */}
       <EditorContent editor={editor} style={{ minHeight: '60vh', padding: '20px 24px', background: 'var(--bg-2)' }} />
 
       <style>{`
@@ -95,13 +132,15 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
         .ProseMirror h2 { font-size: 18px; font-weight: 600; margin: 20px 0 10px; }
         .ProseMirror h3 { font-size: 15px; font-weight: 600; margin: 16px 0 8px; }
         .ProseMirror p { margin-bottom: 12px; }
-        .ProseMirror ul { margin: 10px 0 14px 24px; list-style-type: disc; } .ProseMirror ol { margin: 10px 0 14px 24px; list-style-type: decimal; }
+        .ProseMirror ul { margin: 10px 0 14px 24px; list-style-type: disc; }
+        .ProseMirror ol { margin: 10px 0 14px 24px; list-style-type: decimal; }
         .ProseMirror li { margin-bottom: 4px; }
         .ProseMirror a { color: var(--accent); }
         .ProseMirror code { background: var(--bg-3); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
         .ProseMirror pre { background: var(--bg-3); padding: 14px; border-radius: 6px; margin: 12px 0; }
         .ProseMirror blockquote { border-left: 3px solid var(--border); padding-left: 14px; color: var(--text-muted); margin: 12px 0; }
         .ProseMirror mark { border-radius: 2px; padding: 0 2px; }
+        .ProseMirror img { max-width: 100%; height: auto; border-radius: 6px; margin: 12px 0; }
         .ProseMirror p.is-editor-empty:first-child::before { content: 'Start editing...'; color: var(--text-muted); pointer-events: none; float: left; height: 0; }
       `}</style>
     </div>
