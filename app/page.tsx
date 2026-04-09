@@ -21,6 +21,7 @@ export default function Home() {
   const [results, setResults] = useState<DocResult[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [visibleSpaces, setVisibleSpaces] = useState(SPACES);
 
   useEffect(() => {
     fetch('/api/tree?space=all').then(r => r.json()).then(data => {
@@ -31,7 +32,16 @@ export default function Home() {
       setAllDocs(docs);
       setLoaded(true);
     });
-    fetch('/api/access').then(r => r.json()).then(d => setIsAdmin(d.sessionLevel === 'admin'));
+    fetch('/api/access').then(r => r.json()).then(d => {
+      setIsAdmin(d.sessionLevel === 'admin');
+      const rank: Record<string, number> = { open: 0, team: 1, limited: 2, restricted: 3, executive: 4, admin: 99 };
+      const userRank = rank[d.sessionLevel] ?? 0;
+      if (d.sessionLevel === 'admin') return;
+      setVisibleSpaces(SPACES.filter(s => {
+        const spaceLevel = d.access?.spaces?.[s.slug] ?? 'open';
+        return userRank >= (rank[spaceLevel] ?? 0);
+      }));
+    });
   }, []);
 
   useEffect(() => {
@@ -117,7 +127,7 @@ export default function Home() {
       {/* Spaces */}
       <main style={{ maxWidth: '860px', margin: '0 auto', padding: '0 48px 80px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
-          {SPACES.map((space, i) => (
+          {visibleSpaces.map((space, i) => (
             <button
               key={space.slug}
               onClick={() => router.push('/space/' + space.slug)}
