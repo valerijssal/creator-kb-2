@@ -20,6 +20,7 @@ export default function Home() {
   const [allDocs, setAllDocs] = useState<DocResult[]>([]);
   const [results, setResults] = useState<DocResult[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetch('/api/tree?space=all').then(r => r.json()).then(data => {
@@ -30,6 +31,7 @@ export default function Home() {
       setAllDocs(docs);
       setLoaded(true);
     });
+    fetch('/api/access').then(r => r.json()).then(d => setIsAdmin(d.sessionLevel === 'admin'));
   }, []);
 
   useEffect(() => {
@@ -55,6 +57,7 @@ export default function Home() {
           </div>
           <span style={{ fontWeight: '800', fontSize: '15px', color: 'var(--text)', letterSpacing: '-0.3px' }}>Creator Services</span>
         </div>
+        {isAdmin && <button onClick={() => router.push('/admin')} style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '13px', cursor: 'pointer', padding: '6px 16px', borderRadius: '20px', marginRight: '8px' }}>Admin</button>}
         <button onClick={handleLogout} style={{ background: 'none', border: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '13px', cursor: 'pointer', padding: '6px 16px', borderRadius: '20px' }}>Sign out</button>
       </header>
 
