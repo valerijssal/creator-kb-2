@@ -24,6 +24,7 @@
     "@tiptap/pm": "^3.22.3",
     "@tiptap/react": "^3.22.3",
     "@tiptap/starter-kit": "^3.22.3",
+    "cloudinary": "^2.9.0",
     "gray-matter": "^4.0.3",
     "js-cookie": "^3.0.5",
     "next": "16.2.2",
