@@ -122,14 +122,14 @@ export default function Home() {
                 
                 display: 'flex', alignItems: 'center', gap: '16px',
                 padding: '20px 24px', background: '#fff',
-                border: '2px solid var(--text)', borderRadius: '12px',
+                border: '1px solid var(--border)', borderRadius: '10px',
                 cursor: 'pointer', textAlign: 'left', width: '100%',
-                transition: 'all 0.15s', boxShadow: '3px 3px 0 var(--text)'
+                transition: 'all 0.15s', boxShadow: '0 1px 3px rgba(0,0,0,0.06)'
               }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-2px, -2px)'; e.currentTarget.style.boxShadow = '5px 5px 0 var(--text)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translate(0, 0)'; e.currentTarget.style.boxShadow = '3px 3px 0 var(--text)'; }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'translateY(0)'; }}
             >
-              <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: ['#ff3d8b','#a78bfa','#34d399','#fbbf24','#06b6d4'][i] + '22', border: '2px solid ' + ['#ff3d8b','#a78bfa','#34d399','#fbbf24','#06b6d4'][i], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'var(--bg-3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>
                 {space.icon}
               </div>
               <div style={{ flex: 1 }}>
