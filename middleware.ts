@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
   if (pathname.startsWith('/api/auth')) return NextResponse.next();
 
   const session = request.cookies.get('kb_session');
@@ -19,5 +18,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|login|api/auth).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|login).*)'],
 };
