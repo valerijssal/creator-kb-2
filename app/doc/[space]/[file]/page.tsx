@@ -183,7 +183,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         .doc-content table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
         .doc-content th, .doc-content td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
         .doc-content th { background: var(--bg-2); font-weight: 600; }
-        .doc-content img { display: none; }
+        .doc-content img { max-width: 100%; height: auto; border-radius: 6px; margin: 12px 0; }
         .doc-content .panel, .doc-content .confluence-information-macro { background: var(--bg-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; margin: 14px 0; }
         .doc-content #breadcrumb-section, .doc-content #title-heading, .doc-content .page-metadata, .doc-content .pageSection { display: none; }
       `}</style>
