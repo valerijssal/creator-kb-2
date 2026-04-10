@@ -169,6 +169,8 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
       )}
 
       <style>{`
+
+        /* === REPLACED BELOW === */
         .doc-content { line-height: 1.7; font-size: 15px; color: var(--text); }
         .doc-content h1 { font-size: 22px; font-weight: 700; margin: 28px 0 12px; }
         .doc-content h2 { font-size: 18px; font-weight: 600; margin: 24px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
@@ -184,8 +186,92 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         .doc-content th, .doc-content td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
         .doc-content th { background: var(--bg-2); font-weight: 600; }
         .doc-content img { max-width: 100%; height: auto; border-radius: 6px; margin: 12px 0; }
-        .doc-content .panel, .doc-content .confluence-information-macro { background: var(--bg-2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; margin: 14px 0; }
+
+        /* Confluence panels */
+        .doc-content .panel { border-radius: 6px; margin: 14px 0; overflow: hidden; border: 1px solid var(--border); }
+        .doc-content .panelHeader { padding: 8px 12px; font-weight: 600; font-size: 13px; background: var(--bg-3); }
+        .doc-content .panelContent { padding: 12px 16px; background: var(--bg-2); }
+
+        /* Confluence info/note/warning/tip macros */
+        .doc-content .confluence-information-macro { display: flex; gap: 12px; border-radius: 6px; padding: 12px 16px; margin: 14px 0; border-left: 4px solid #0052cc; background: #e9f0ff; }
+        .doc-content .confluence-information-macro-note { border-left-color: #ff991f; background: #fff7e6; }
+        .doc-content .confluence-information-macro-warning { border-left-color: #de350b; background: #ffebe6; }
+        .doc-content .confluence-information-macro-tip { border-left-color: #00875a; background: #e3fcef; }
+        .doc-content .confluence-information-macro-body { font-size: 14px; color: var(--text); }
+        .doc-content .confluence-information-macro-icon { display: none; }
+
+        /* Confluence status macro */
+        .doc-content .status-macro { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+        .doc-content .status-macro[data-status-color="green"], .doc-content .status-macro[colour="Green"] { background: #e3fcef; color: #006644; }
+        .doc-content .status-macro[data-status-color="yellow"], .doc-content .status-macro[colour="Yellow"] { background: #fff7e6; color: #974f0c; }
+        .doc-content .status-macro[data-status-color="red"], .doc-content .status-macro[colour="Red"] { background: #ffebe6; color: #bf2600; }
+        .doc-content .status-macro[data-status-color="blue"], .doc-content .status-macro[colour="Blue"] { background: #e9f0ff; color: #0052cc; }
+        .doc-content .status-macro[data-status-color="grey"], .doc-content .status-macro[colour="Grey"] { background: #f4f5f7; color: #5e6c84; }
+        .doc-content .status-macro[data-status-color="purple"], .doc-content .status-macro[colour="Purple"] { background: #eae6ff; color: #403294; }
+
+        /* Confluence expand macro */
+        .doc-content .expand-container { border: 1px solid var(--border); border-radius: 6px; margin: 12px 0; overflow: hidden; }
+        .doc-content .expand-control { padding: 8px 14px; background: var(--bg-2); cursor: pointer; font-size: 13px; font-weight: 500; color: var(--accent); }
+        .doc-content .expand-content { padding: 12px 16px; }
+
+        /* Confluence task list */
+        .doc-content .task-list { list-style: none; margin-left: 0; padding-left: 0; }
+        .doc-content .task-list li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+
+        /* Hide Confluence chrome */
         .doc-content #breadcrumb-section, .doc-content #title-heading, .doc-content .page-metadata, .doc-content .pageSection { display: none; }
+        .doc-content .aui-nav, .doc-content #footer, .doc-content .page-metadata-modification-info { display: none; }
+        .doc-content .aui-nav, .doc-content #footer, .doc-content .page-metadata-modification-info { display: none; }
+        .doc-content { line-height: 1.7; font-size: 15px; color: var(--text); }
+        .doc-content h1 { font-size: 22px; font-weight: 700; margin: 28px 0 12px; }
+        .doc-content h2 { font-size: 18px; font-weight: 600; margin: 24px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+        .doc-content h3 { font-size: 15px; font-weight: 600; margin: 18px 0 8px; }
+        .doc-content p { margin-bottom: 12px; }
+        .doc-content ul, .doc-content ol { margin: 10px 0 14px 22px; }
+        .doc-content li { margin-bottom: 4px; }
+        .doc-content a { color: var(--accent); text-decoration: none; }
+        .doc-content a:hover { text-decoration: underline; }
+        .doc-content strong { font-weight: 600; }
+        .doc-content code { background: var(--bg-3); padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: monospace; }
+        .doc-content table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+        .doc-content th, .doc-content td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+        .doc-content th { background: var(--bg-2); font-weight: 600; }
+        .doc-content img { max-width: 100%; height: auto; border-radius: 6px; margin: 12px 0; }
+
+        /* Confluence panels */
+        .doc-content .panel { border-radius: 6px; margin: 14px 0; overflow: hidden; border: 1px solid var(--border); }
+        .doc-content .panelHeader { padding: 8px 12px; font-weight: 600; font-size: 13px; background: var(--bg-3); }
+        .doc-content .panelContent { padding: 12px 16px; background: var(--bg-2); }
+
+        /* Confluence info/note/warning/tip macros */
+        .doc-content .confluence-information-macro { display: flex; gap: 12px; border-radius: 6px; padding: 12px 16px; margin: 14px 0; border-left: 4px solid #0052cc; background: #e9f0ff; }
+        .doc-content .confluence-information-macro-note { border-left-color: #ff991f; background: #fff7e6; }
+        .doc-content .confluence-information-macro-warning { border-left-color: #de350b; background: #ffebe6; }
+        .doc-content .confluence-information-macro-tip { border-left-color: #00875a; background: #e3fcef; }
+        .doc-content .confluence-information-macro-body { font-size: 14px; color: var(--text); }
+        .doc-content .confluence-information-macro-icon { display: none; }
+
+        /* Confluence status macro */
+        .doc-content .status-macro { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+        .doc-content .status-macro[data-status-color="green"], .doc-content .status-macro[colour="Green"] { background: #e3fcef; color: #006644; }
+        .doc-content .status-macro[data-status-color="yellow"], .doc-content .status-macro[colour="Yellow"] { background: #fff7e6; color: #974f0c; }
+        .doc-content .status-macro[data-status-color="red"], .doc-content .status-macro[colour="Red"] { background: #ffebe6; color: #bf2600; }
+        .doc-content .status-macro[data-status-color="blue"], .doc-content .status-macro[colour="Blue"] { background: #e9f0ff; color: #0052cc; }
+        .doc-content .status-macro[data-status-color="grey"], .doc-content .status-macro[colour="Grey"] { background: #f4f5f7; color: #5e6c84; }
+        .doc-content .status-macro[data-status-color="purple"], .doc-content .status-macro[colour="Purple"] { background: #eae6ff; color: #403294; }
+
+        /* Confluence expand macro */
+        .doc-content .expand-container { border: 1px solid var(--border); border-radius: 6px; margin: 12px 0; overflow: hidden; }
+        .doc-content .expand-control { padding: 8px 14px; background: var(--bg-2); cursor: pointer; font-size: 13px; font-weight: 500; color: var(--accent); }
+        .doc-content .expand-content { padding: 12px 16px; }
+
+        /* Confluence task list */
+        .doc-content .task-list { list-style: none; margin-left: 0; padding-left: 0; }
+        .doc-content .task-list li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+
+        /* Hide Confluence chrome */
+        .doc-content #breadcrumb-section, .doc-content #title-heading, .doc-content .page-metadata, .doc-content .pageSection { display: none; }
+        .doc-content .aui-nav, .doc-content #footer, .doc-content .page-metadata-modification-info { display: none; }
       `}</style>
     </div>
   );
