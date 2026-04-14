@@ -510,7 +510,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
               <span style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
                 {SPACE_LABELS[space]}
               </span>
-              
+              {isAdmin && (
                 <button onClick={() => setShowNewFolder(true)} title="New folder"
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex',
                     alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '4px', padding: 0, flexShrink: 0 }}
