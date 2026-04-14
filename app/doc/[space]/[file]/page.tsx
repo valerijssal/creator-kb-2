@@ -61,7 +61,6 @@ function decodeTitle(title: string): string {
     .replace(/&gt;/g, '>');
 }
 
-/* --- Chevron icon --- */
 function ChevronIcon({ expanded }: { expanded: boolean }) {
   return (
     <svg
@@ -86,7 +85,6 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
   );
 }
 
-/* --- Draggable tree item --- */
 function DraggableTreeItem({
   node,
   depth,
@@ -214,6 +212,9 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const [dragActiveId, setDragActiveId] = useState<string | null>(null);
   const [dropTargetId, setDropTargetId] = useState<string | null>(null);
   const [reorderMsg, setReorderMsg] = useState('');
+  const [showNewFolder, setShowNewFolder] = useState(false);
+  const [newFolderTitle, setNewFolderTitle] = useState('');
+  const [creatingFolder, setCreatingFolder] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -318,6 +319,23 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
       router.push(`/doc/${space}/${encodeURIComponent(data.fileName)}`);
     }
     setCreatingSub(false);
+  };
+
+  const handleCreateFolder = async () => {
+    if (!newFolderTitle.trim()) return;
+    setCreatingFolder(true);
+    const res = await fetch('/api/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: newFolderTitle, space, parentFile: null }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setShowNewFolder(false);
+      setNewFolderTitle('');
+      router.push(`/doc/${space}/${encodeURIComponent(data.fileName)}`);
+    }
+    setCreatingFolder(false);
   };
 
   const toggleNode = (nodeFile: string) => {
@@ -464,8 +482,29 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
 
       <div style={{ display: 'flex', flex: 1 }}>
         <aside style={{ width: '280px', flexShrink: 0, borderRight: '1px solid var(--border)', padding: '20px 0', overflowY: 'auto', height: 'calc(100vh - 56px)', position: 'sticky', top: '56px', background: 'var(--bg)' }}>
-          <div style={{ padding: '0 20px 14px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-            {SPACE_LABELS[space]}
+          <div style={{ padding: '0 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+              {SPACE_LABELS[space]}
+            </span>
+            {isAdmin && (
+              <button
+                onClick={() => setShowNewFolder(true)}
+                title="New folder"
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', width: '24px', height: '24px',
+                  borderRadius: '4px', padding: 0,
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2, #f0f0f0)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 4.5C2 3.67 2.67 3 3.5 3H6.29a1 1 0 0 1 .7.29L8 4.3h4.5c.83 0 1.5.67 1.5 1.5V11.5c0 .83-.67 1.5-1.5 1.5h-9A1.5 1.5 0 0 1 2 11.5V4.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" fill="none"/>
+                  <path d="M8 7v4M6 9h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            )}
           </div>
           <div style={{ padding: '0 8px' }}>
             {Object.keys(sidebarTree).length === 0 ? (
@@ -518,6 +557,28 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
           )}
         </main>
       </div>
+
+      {showNewFolder && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '28px', width: '400px', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
+            <h3 style={{ marginBottom: '8px', fontSize: '15px', fontWeight: '600' }}>New folder</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '16px' }}>Creates a page at the root of {SPACE_LABELS[space]}. Drag other pages into it to organize.</p>
+            <input
+              type="text"
+              placeholder="Folder name..."
+              value={newFolderTitle}
+              onChange={e => setNewFolderTitle(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleCreateFolder()}
+              autoFocus
+              style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontSize: '13px', marginBottom: '16px', outline: 'none' }}
+            />
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button onClick={() => { setShowNewFolder(false); setNewFolderTitle(''); }} style={{ padding: '7px 14px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
+              <button onClick={handleCreateFolder} disabled={!newFolderTitle.trim() || creatingFolder} style={{ padding: '7px 14px', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: '500', cursor: newFolderTitle.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }}>{creatingFolder ? 'Creating...' : 'Create'}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showMoveModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
