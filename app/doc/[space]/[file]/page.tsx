@@ -65,6 +65,9 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [actionMsg, setActionMsg] = useState('');
   const [isStandalonePage, setIsStandalonePage] = useState(false);
+  const [showCreateSub, setShowCreateSub] = useState(false);
+  const [subTitle, setSubTitle] = useState('');
+  const [creatingSub, setCreatingSub] = useState(false);
   const [sidebarTree, setSidebarTree] = useState<Record<string, TreeNode>>({});
   const [childMap, setChildMap] = useState<Record<string, TreeNode[]>>({});
   const [rootNodes, setRootNodes] = useState<TreeNode[]>([]);
@@ -149,6 +152,23 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     if (res.ok) router.push(`/space/${moveTarget}`);
   };
 
+  const handleCreateSub = async () => {
+    if (!subTitle.trim()) return;
+    setCreatingSub(true);
+    const res = await fetch('/api/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: subTitle, space, parentFile: fileName }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setShowCreateSub(false);
+      setSubTitle('');
+      router.push(`/doc/${space}/${encodeURIComponent(data.fileName)}`);
+    }
+    setCreatingSub(false);
+  };
+
   const toggleNode = (nodeFile: string) => {
     setExpandedNodes(prev => {
       const next = new Set(prev);
@@ -214,6 +234,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
           {actionMsg && <span style={{ color: 'var(--accent)', fontSize: '13px' }}>{actionMsg}</span>}
           {!editing ? (
             <>
+              <button onClick={() => setShowCreateSub(true)} style={{ padding: '5px 12px', background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>+ Sub-page</button>
               <button onClick={() => setEditing(true)} style={{ padding: '5px 14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>Edit</button>
               <button onClick={() => setShowMoveModal(true)} style={{ padding: '5px 12px', background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>Move</button>
               <button onClick={() => setShowDeleteConfirm(true)} style={{ padding: '5px 12px', background: 'none', color: 'var(--danger)', border: '1px solid var(--danger)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>Delete</button>
@@ -247,7 +268,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         </aside>
 
         {/* Main content */}
-        <main style={{ flex: 1, padding: '48px 56px', minWidth: 0 }}>
+        <main style={{ flex: 1, padding: '48px 56px', minWidth: 0, maxWidth: '960px' }}>
           <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '28px', color: 'var(--text)' }}>{decodeTitle(title)}</h1>
           {loading ? (
             <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
@@ -272,6 +293,28 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={() => setShowMoveModal(false)} style={{ padding: '7px 14px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
               <button onClick={handleMove} disabled={!moveTarget} style={{ padding: '7px 14px', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: '500', cursor: moveTarget ? 'pointer' : 'not-allowed', fontSize: '13px' }}>Move</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCreateSub && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '28px', width: '400px', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
+            <h3 style={{ marginBottom: '8px', fontSize: '15px', fontWeight: '600' }}>Create sub-page</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '16px' }}>Under: {decodeTitle(title)}</p>
+            <input
+              type="text"
+              placeholder="Page title..."
+              value={subTitle}
+              onChange={e => setSubTitle(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleCreateSub()}
+              autoFocus
+              style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontSize: '13px', marginBottom: '16px', outline: 'none' }}
+            />
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <button onClick={() => { setShowCreateSub(false); setSubTitle(''); }} style={{ padding: '7px 14px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
+              <button onClick={handleCreateSub} disabled={!subTitle.trim() || creatingSub} style={{ padding: '7px 14px', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: '500', cursor: subTitle.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }}>{creatingSub ? 'Creating...' : 'Create'}</button>
             </div>
           </div>
         </div>
