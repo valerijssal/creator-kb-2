@@ -152,9 +152,9 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
             {children.length === 0 && <span style={{ width: '14px', flexShrink: 0 }} />}
             <button
               onClick={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)}
-              style={{ background: isCurrent ? 'var(--accent-light)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', borderRadius: '4px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)', fontWeight: isCurrent ? '600' : '400', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              style={{ background: isCurrent ? 'var(--accent-light)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', borderRadius: '4px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)', fontWeight: isCurrent ? '600' : '400', width: '100%', lineHeight: '1.4' }}
             >
-              {node.title}
+              {node.title.replace(/^[^:]+:\s*/,'')}
             </button>
           </div>
           {isExpanded && children.length > 0 && renderTree(children, depth + 1)}
