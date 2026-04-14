@@ -1,17 +1,17 @@
 'use client';
-import React, { useEffect, useState, use, useCallback } from 'react';
+import React, { useEffect, useState, use, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import {
   DndContext,
   DragOverlay,
-  closestCenter,
   PointerSensor,
   useSensor,
   useSensors,
   DragStartEvent,
   DragEndEvent,
   useDroppable,
+  closestCenter,
 } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -29,6 +29,7 @@ const SPACE_LABELS: Record<string, string> = {
 const ALL_SPACES = Object.keys(SPACE_LABELS);
 
 type TreeNode = { file: string; title: string; parent: string | null };
+type OrderMap = Record<string, Record<string, string[]>>;
 
 function extractBodyContent(html: string): string {
   const bodyMatch = html.match(/<div id="main-content"[^>]*>([\s\S]*?)<\/div>\s*(?=<div class="pageSection|<\/div>\s*<\/div>\s*<div id="footer")/);
@@ -71,47 +72,56 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
   );
 }
 
+function DropBetween({ id, isOver }: { id: string; isOver: boolean }) {
+  const { setNodeRef } = useDroppable({ id });
+  return (
+    <div ref={setNodeRef} style={{ height: isOver ? '2px' : '6px', margin: '0 10px', position: 'relative', transition: 'height 0.1s' }}>
+      {isOver && (
+        <div style={{ position: 'absolute', top: '0', left: '0', right: '0', height: '2px', background: '#378ADD', borderRadius: '2px' }}>
+          <div style={{ width: '6px', height: '6px', background: '#378ADD', borderRadius: '50%', position: 'absolute', top: '-2px', left: '0' }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RootDropZone({ isOver, isDragging }: { isOver: boolean; isDragging: boolean }) {
   const { setNodeRef } = useDroppable({ id: '__ROOT__' });
   if (!isDragging) return null;
   return (
-    <div
-      ref={setNodeRef}
-      style={{
-        margin: '0 8px 8px',
-        padding: '10px 16px',
-        border: isOver ? '2px solid var(--accent)' : '2px dashed rgba(59, 130, 246, 0.3)',
-        borderRadius: '8px',
-        background: isOver ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-        color: isOver ? 'var(--accent)' : 'var(--text-muted)',
-        fontSize: '12px',
-        fontWeight: '500',
-        textAlign: 'center',
-        transition: 'all 0.15s',
-      }}
-    >
-      Drop here to move to root level
+    <div ref={setNodeRef} style={{
+      margin: '0 8px 6px', padding: '8px 14px',
+      border: isOver ? '1.5px solid var(--accent)' : '1.5px dashed rgba(59, 130, 246, 0.3)',
+      borderRadius: '6px', background: isOver ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
+      color: isOver ? 'var(--accent)' : 'var(--text-muted)',
+      fontSize: '12px', fontWeight: '500', textAlign: 'center' as const, transition: 'all 0.15s',
+    }}>
+      Drop here &rarr; root level
     </div>
   );
 }
 
 function DraggableTreeItem({
-  node, depth, isAdmin, isCurrent, isParent, isExpanded, hasChildren, isDropTarget, onToggle, onNavigate,
+  node, depth, isAdmin, isCurrent, isParent, isExpanded, hasChildren, isDropTarget, isNested, onToggle, onNavigate, onMoveToRoot,
 }: {
   node: TreeNode; depth: number; isAdmin: boolean; isCurrent: boolean; isParent: boolean;
-  isExpanded: boolean; hasChildren: boolean; isDropTarget: boolean; onToggle: () => void; onNavigate: () => void;
+  isExpanded: boolean; hasChildren: boolean; isDropTarget: boolean; isNested: boolean; onToggle: () => void; onNavigate: () => void; onMoveToRoot: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: node.file, disabled: !isAdmin });
   const style: React.CSSProperties = { transform: CSS.Translate.toString(transform), transition, opacity: isDragging ? 0.35 : 1 };
   const cleanTitle = decodeTitle(node.title);
+  const [hovered, setHovered] = useState(false);
 
   return (
     <div ref={setNodeRef} style={style}>
-      <div style={{
-        display: 'flex', alignItems: 'center', paddingLeft: `${depth * 20 + 8}px`, paddingRight: '8px',
-        marginBottom: '1px', background: isDropTarget ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-        borderRadius: '6px', transition: 'background 0.15s',
-      }}>
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          display: 'flex', alignItems: 'center', paddingLeft: `${depth * 20 + 8}px`, paddingRight: '4px',
+          background: isDropTarget ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
+          borderRadius: '6px', transition: 'background 0.15s',
+        }}>
         {hasChildren ? (
           <button onClick={(e) => { e.stopPropagation(); onToggle(); }}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex',
@@ -125,16 +135,26 @@ function DraggableTreeItem({
         )}
         <button onClick={onNavigate} {...(isAdmin ? { ...attributes, ...listeners } : {})}
           style={{
-            background: isCurrent ? 'rgba(59, 130, 246, 0.1)' : isParent ? 'rgba(59, 130, 246, 0.04)' : 'none',
+            background: isCurrent ? 'rgba(59, 130, 246, 0.1)' : isParent ? 'rgba(59, 130, 246, 0.04)' : hovered && !isCurrent && !isParent ? 'var(--bg-2, #f5f5f5)' : 'none',
             border: 'none', borderLeft: isCurrent ? '2px solid var(--accent)' : isParent ? '2px solid rgba(59, 130, 246, 0.25)' : '2px solid transparent',
             borderRadius: '4px', cursor: isAdmin ? 'grab' : 'pointer', textAlign: 'left' as const,
             padding: '6px 10px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)',
             fontWeight: isCurrent ? '600' : isParent ? '500' : '400', flex: 1, lineHeight: '1.5', transition: 'background 0.1s',
-          }}
-          onMouseEnter={e => { if (!isCurrent && !isParent) e.currentTarget.style.background = 'var(--bg-2, #f5f5f5)'; }}
-          onMouseLeave={e => { if (!isCurrent && !isParent) e.currentTarget.style.background = 'none'; }}>
+          }}>
           {cleanTitle}
         </button>
+        {isAdmin && isNested && hovered && (
+          <button onClick={(e) => { e.stopPropagation(); onMoveToRoot(); }} title="Move to root"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', width: '22px', height: '22px', borderRadius: '4px',
+              flexShrink: 0, padding: 0, opacity: 0.6, transition: 'opacity 0.1s' }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--accent)'; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '0.6'; e.currentTarget.style.color = 'var(--text-muted)'; }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 11V3M7 3L4 6M7 3L10 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );
@@ -168,6 +188,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [newFolderTitle, setNewFolderTitle] = useState('');
   const [creatingFolder, setCreatingFolder] = useState(false);
+  const [orderMap, setOrderMap] = useState<OrderMap>({});
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -203,12 +224,31 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         if (tree[fileName]?.parent) expanded.add(tree[fileName].parent!);
         setExpandedNodes(expanded);
       });
+
+    fetch('/api/order').then(r => r.json()).then(setOrderMap).catch(() => {});
   }, [space, fileName]);
 
-  const getRoots = useCallback((): TreeNode[] => {
-    return Object.values(sidebarTree)
-      .filter(p => !p.parent || !(p.parent in sidebarTree))
-      .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)));
+  const getSortedChildren = useCallback((parentKey: string | null, children: TreeNode[]): TreeNode[] => {
+    const key = parentKey || '__root__';
+    const spaceOrder = orderMap[space];
+    const order = spaceOrder?.[key];
+    if (!order || order.length === 0) {
+      return [...children].sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)));
+    }
+    const indexed = new Map(order.map((f, i) => [f, i]));
+    return [...children].sort((a, b) => {
+      const ai = indexed.get(a.file) ?? 9999;
+      const bi = indexed.get(b.file) ?? 9999;
+      if (ai !== bi) return ai - bi;
+      return decodeTitle(a.title).localeCompare(decodeTitle(b.title));
+    });
+  }, [orderMap, space]);
+
+  const getChildrenOf = useCallback((parentFile: string | null): TreeNode[] => {
+    if (parentFile === null) {
+      return Object.values(sidebarTree).filter(p => !p.parent || !(p.parent in sidebarTree));
+    }
+    return Object.values(sidebarTree).filter(n => n.parent === parentFile);
   }, [sidebarTree]);
 
   const handleSave = async () => {
@@ -262,6 +302,20 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const handleDragOver = (event: any) => { setDropTargetId(event.over?.id as string || null); };
   const handleDragCancel = () => { setDragActiveId(null); setDropTargetId(null); };
 
+  const saveOrder = async (parentKey: string | null, orderedFiles: string[]) => {
+    await fetch('/api/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ space, parentKey: parentKey || '__root__', orderedFiles }),
+    });
+    setOrderMap(prev => {
+      const next = { ...prev };
+      if (!next[space]) next[space] = {};
+      next[space][parentKey || '__root__'] = orderedFiles;
+      return next;
+    });
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setDragActiveId(null);
@@ -269,50 +323,127 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     if (!over || active.id === over.id) return;
 
     const draggedFile = active.id as string;
-    const isRootDrop = over.id === '__ROOT__';
-    const newParent = isRootDrop ? null : (over.id as string);
-    const currentParent = sidebarTree[draggedFile]?.parent;
+    const overId = over.id as string;
 
-    if (currentParent === newParent) return;
-
-    if (newParent) {
-      let check: string | null = newParent;
-      while (check && sidebarTree[check]) {
-        if (check === draggedFile) { setReorderMsg('Cannot move a folder into its own child.'); setTimeout(() => setReorderMsg(''), 3000); return; }
-        check = sidebarTree[check].parent;
+    if (overId === '__ROOT__') {
+      const currentParent = sidebarTree[draggedFile]?.parent;
+      if (!currentParent || !(currentParent in sidebarTree)) return;
+      setSidebarTree(prev => ({ ...prev, [draggedFile]: { ...prev[draggedFile], parent: null } }));
+      setReorderMsg('Moving...');
+      const res = await fetch('/api/tree/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ space, file: draggedFile, newParent: null }) });
+      if (res.ok) { setReorderMsg('Moved.'); setTimeout(() => setReorderMsg(''), 2000); }
+      else {
+        setSidebarTree(prev => ({ ...prev, [draggedFile]: { ...prev[draggedFile], parent: currentParent } }));
+        setReorderMsg('Move failed.'); setTimeout(() => setReorderMsg(''), 3000);
       }
+      return;
     }
 
-    setSidebarTree(prev => ({ ...prev, [draggedFile]: { ...prev[draggedFile], parent: newParent } }));
-    if (newParent) setExpandedNodes(prev => new Set([...prev, newParent]));
-    setReorderMsg('Moving...');
+    if (overId.startsWith('between::')) {
+      const parts = overId.split('::');
+      const targetParentKey = parts[1] === '__root__' ? null : parts[1];
+      const insertIndex = parseInt(parts[2], 10);
+      const draggedParent = sidebarTree[draggedFile]?.parent;
+      const isSameParent = (draggedParent === targetParentKey) ||
+        (!draggedParent && targetParentKey === null) ||
+        (draggedParent && !(draggedParent in sidebarTree) && targetParentKey === null);
 
+      if (isSameParent) {
+        const siblings = getSortedChildren(targetParentKey, getChildrenOf(targetParentKey));
+        const fileList = siblings.map(n => n.file).filter(f => f !== draggedFile);
+        const adjustedIndex = Math.min(insertIndex, fileList.length);
+        fileList.splice(adjustedIndex, 0, draggedFile);
+        setReorderMsg('Reordering...');
+        await saveOrder(targetParentKey, fileList);
+        setReorderMsg('Reordered.'); setTimeout(() => setReorderMsg(''), 2000);
+      } else {
+        const currentParent = sidebarTree[draggedFile]?.parent;
+        setSidebarTree(prev => ({ ...prev, [draggedFile]: { ...prev[draggedFile], parent: targetParentKey } }));
+        if (targetParentKey) setExpandedNodes(prev => new Set([...prev, targetParentKey]));
+        setReorderMsg('Moving...');
+        const res = await fetch('/api/tree/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ space, file: draggedFile, newParent: targetParentKey }) });
+        if (res.ok) {
+          const siblings = getSortedChildren(targetParentKey, getChildrenOf(targetParentKey)).map(n => n.file).filter(f => f !== draggedFile);
+          const adjustedIndex = Math.min(insertIndex, siblings.length);
+          siblings.splice(adjustedIndex, 0, draggedFile);
+          await saveOrder(targetParentKey, siblings);
+          setReorderMsg('Moved.'); setTimeout(() => setReorderMsg(''), 2000);
+        } else {
+          setSidebarTree(prev => ({ ...prev, [draggedFile]: { ...prev[draggedFile], parent: currentParent ?? null } }));
+          setReorderMsg('Move failed.'); setTimeout(() => setReorderMsg(''), 3000);
+        }
+      }
+      return;
+    }
+
+    const currentParent = sidebarTree[draggedFile]?.parent;
+    const newParent = overId;
+    if (currentParent === newParent) return;
+    let check: string | null = newParent;
+    while (check && sidebarTree[check]) {
+      if (check === draggedFile) { setReorderMsg('Cannot move a folder into its own child.'); setTimeout(() => setReorderMsg(''), 3000); return; }
+      check = sidebarTree[check].parent;
+    }
+    setSidebarTree(prev => ({ ...prev, [draggedFile]: { ...prev[draggedFile], parent: newParent } }));
+    setExpandedNodes(prev => new Set([...prev, newParent]));
+    setReorderMsg('Moving...');
     const res = await fetch('/api/tree/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ space, file: draggedFile, newParent }) });
     if (res.ok) { setReorderMsg('Moved.'); setTimeout(() => setReorderMsg(''), 2000); }
     else {
       setSidebarTree(prev => ({ ...prev, [draggedFile]: { ...prev[draggedFile], parent: currentParent ?? null } }));
-      const err = await res.json().catch(() => ({ error: 'Move failed' }));
-      setReorderMsg(err.error || 'Move failed.'); setTimeout(() => setReorderMsg(''), 3000);
+      setReorderMsg('Move failed.'); setTimeout(() => setReorderMsg(''), 3000);
     }
   };
 
-  const renderTree = (nodes: TreeNode[], depth: number): React.ReactNode => {
-    return nodes.sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title))).map(node => {
-      const children = Object.values(sidebarTree).filter(n => n.parent === node.file);
+  const moveToRoot = async (fileToMove: string) => {
+    const currentParent = sidebarTree[fileToMove]?.parent;
+    if (!currentParent || !(currentParent in sidebarTree)) return;
+    setSidebarTree(prev => ({ ...prev, [fileToMove]: { ...prev[fileToMove], parent: null } }));
+    setReorderMsg('Moving to root...');
+    const res = await fetch('/api/tree/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ space, file: fileToMove, newParent: null }) });
+    if (res.ok) { setReorderMsg('Moved.'); setTimeout(() => setReorderMsg(''), 2000); }
+    else {
+      setSidebarTree(prev => ({ ...prev, [fileToMove]: { ...prev[fileToMove], parent: currentParent } }));
+      setReorderMsg('Move failed.'); setTimeout(() => setReorderMsg(''), 3000);
+    }
+  };
+
+  const renderTree = (parentKey: string | null, depth: number): React.ReactNode => {
+    const children = getChildrenOf(parentKey);
+    const sorted = getSortedChildren(parentKey, children);
+    const pKey = parentKey || '__root__';
+    const isDragging = !!dragActiveId;
+
+    return sorted.map((node, idx) => {
+      const nodeChildren = Object.values(sidebarTree).filter(n => n.parent === node.file);
       const isExpanded = expandedNodes.has(node.file);
       const isCurrent = node.file === fileName;
       const isParentNode = node.file === sidebarTree[fileName]?.parent;
       const isTarget = dropTargetId === node.file && dragActiveId !== node.file;
+      const betweenId = `between::${pKey}::${idx}`;
+      const isBeforeOver = dropTargetId === betweenId;
+      const isNested = !!(node.parent && node.parent in sidebarTree);
+
       return (
         <div key={node.file}>
+          {isDragging && dragActiveId !== node.file && (
+            <DropBetween id={betweenId} isOver={isBeforeOver} />
+          )}
           <DraggableTreeItem node={node} depth={depth} isAdmin={isAdmin} isCurrent={isCurrent} isParent={isParentNode}
-            isExpanded={isExpanded} hasChildren={children.length > 0} isDropTarget={isTarget}
-            onToggle={() => toggleNode(node.file)} onNavigate={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)} />
-          {isExpanded && children.length > 0 && (
+            isExpanded={isExpanded} hasChildren={nodeChildren.length > 0} isDropTarget={isTarget} isNested={isNested}
+            onToggle={() => toggleNode(node.file)} onNavigate={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)}
+            onMoveToRoot={() => moveToRoot(node.file)} />
+          {isExpanded && nodeChildren.length > 0 && (
             <div style={{ marginLeft: `${depth * 20 + 19}px`, borderLeft: '1px solid rgba(0,0,0,0.06)' }}>
-              {renderTree(children, depth + 1)}
+              {renderTree(node.file, depth + 1)}
             </div>
+          )}
+          {isDragging && idx === sorted.length - 1 && dragActiveId !== node.file && (
+            <DropBetween id={`between::${pKey}::${idx + 1}`} isOver={dropTargetId === `between::${pKey}::${idx + 1}`} />
           )}
         </div>
       );
@@ -372,13 +503,12 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
                 </button>
               )}
             </div>
-            <RootDropZone isOver={dropTargetId === '__ROOT__' && !!dragActiveId} isDragging={!!dragActiveId} />
             <div style={{ padding: '0 8px' }}>
               {Object.keys(sidebarTree).length === 0 ? (
                 <div style={{ padding: '8px 20px', fontSize: '13px', color: 'var(--text-muted)' }}>Loading...</div>
               ) : (
                 <>
-                  {renderTree(getRoots(), 0)}
+                  {renderTree(null, 0)}
                   <DragOverlay dropAnimation={null}>
                     {draggedNode ? (
                       <div style={{ padding: '6px 14px', background: 'var(--bg)', border: '1px solid var(--accent)', borderRadius: '8px',
