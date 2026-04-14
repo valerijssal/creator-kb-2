@@ -124,14 +124,22 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const bodyContent = extractBodyContent(content);
 
   // Build tree structure for sidebar
-  const rootNodes = Object.values(sidebarTree).filter(p => !p.parent || !(p.parent in sidebarTree));
+  const decodeTitle = (title: string) => title
+    .replace(/^[^:]+:\s*/, '')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+
   const childMap: Record<string, {file: string; title: string; parent: string | null}[]> = {};
   Object.values(sidebarTree).forEach(node => {
-    if (node.parent) {
+    if (node.parent && node.parent in sidebarTree) {
       if (!childMap[node.parent]) childMap[node.parent] = [];
       childMap[node.parent].push(node);
     }
   });
+  const rootNodes = Object.values(sidebarTree).filter(p => !p.parent || !(p.parent in sidebarTree));
 
   const toggleNode = (file: string) => {
     setExpandedNodes(prev => {
@@ -144,17 +152,17 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
 
   const renderTree = (nodes: {file: string; title: string; parent: string | null}[], depth: number): React.ReactNode => {
     return nodes
-      .sort((a, b) => a.title.localeCompare(b.title))
+      .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)))
       .map(node => {
         const children = childMap[node.file] || [];
         const isExpanded = expandedNodes.has(node.file);
         const isCurrent = node.file === fileName;
-        const cleanTitle = node.title.replace(/^[^:]+:\s*/, '');
+        const cleanTitle = decodeTitle(node.title);
         return (
           <div key={node.file}>
             <div style={{ display: 'flex', alignItems: 'flex-start', paddingLeft: `${depth * 12}px` }}>
               <button
-                onClick={() => toggleNode(node.file)}
+                onClick={() => { if (children.length > 0) toggleNode(node.file); }}
                 style={{ background: 'none', border: 'none', cursor: children.length > 0 ? 'pointer' : 'default', color: 'var(--text-muted)', fontSize: '10px', padding: '6px 4px 0', flexShrink: 0, width: '16px', opacity: children.length > 0 ? 1 : 0 }}
               >
                 {isExpanded ? '▾' : '▸'}
