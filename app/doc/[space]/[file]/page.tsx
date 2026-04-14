@@ -136,10 +136,11 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         ) : editing ? (
           <RichEditor content={editContent} onChange={setEditContent} />
         ) : (
-          {isStandalonePage
-            ? <iframe srcDoc={content} style={{ width: '100%', height: '80vh', border: 'none', borderRadius: '8px' }} />
-            : <div className="doc-content" dangerouslySetInnerHTML={{ __html: bodyContent }} />
-          }
+          {isStandalonePage ? (
+            <iframe srcDoc={content} style={{ width: '100%', height: '80vh', border: 'none', borderRadius: '8px' }} />
+          ) : (
+            <div className="doc-content" dangerouslySetInnerHTML={{ __html: bodyContent }} />
+          )}
         )}
       </main>
 
