@@ -318,18 +318,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     else { setReorderMsg('Failed to update access.'); setTimeout(() => setReorderMsg(''), 3000); }
   };
 
-  const handleAccessChange = async (level: string) => {
-    setShowAccessMenu(false);
-    setDocAccessLevel(level);
-    setReorderMsg('Updating access...');
-    const res = await fetch('/api/access', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ docs: { [fileName]: level } }),
-    });
-    if (res.ok) { setReorderMsg('Access updated.'); setTimeout(() => setReorderMsg(''), 2000); }
-    else { setReorderMsg('Failed to update access.'); setTimeout(() => setReorderMsg(''), 3000); }
-  };
+  
 
   const handleDragStart = (event: DragStartEvent) => { setDragActiveId(event.active.id as string); };
   const handleDragOver = (event: any) => { setDropTargetId(event.over?.id as string || null); };
