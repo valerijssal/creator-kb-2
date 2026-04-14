@@ -61,6 +61,31 @@ function decodeTitle(title: string): string {
     .replace(/&gt;/g, '>');
 }
 
+/* --- Chevron icon --- */
+function ChevronIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      style={{
+        transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
+        transition: 'transform 0.15s ease',
+        flexShrink: 0,
+      }}
+    >
+      <path
+        d="M6 4L10 8L6 12"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 /* --- Draggable tree item --- */
 function DraggableTreeItem({
   node,
@@ -100,7 +125,7 @@ function DraggableTreeItem({
   const style: React.CSSProperties = {
     transform: CSS.Translate.toString(transform),
     transition,
-    opacity: isDragging ? 0.4 : 1,
+    opacity: isDragging ? 0.35 : 1,
   };
 
   const cleanTitle = decodeTitle(node.title);
@@ -110,44 +135,52 @@ function DraggableTreeItem({
       <div
         style={{
           display: 'flex',
-          alignItems: 'flex-start',
-          paddingLeft: `${depth * 12}px`,
-          background: isDropTarget ? '#e8f0fe' : 'transparent',
-          borderRadius: isDropTarget ? '4px' : undefined,
+          alignItems: 'center',
+          paddingLeft: `${depth * 20 + 8}px`,
+          paddingRight: '8px',
+          marginBottom: '1px',
+          background: isDropTarget ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
+          borderRadius: '6px',
           transition: 'background 0.15s',
         }}
       >
         {hasChildren ? (
           <button
-            onClick={onToggle}
+            onClick={(e) => { e.stopPropagation(); onToggle(); }}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--text-muted)', fontSize: '16px',
-              padding: '2px 2px 0', flexShrink: 0, width: '20px', lineHeight: 1,
+              color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', width: '22px', height: '22px',
+              borderRadius: '4px', flexShrink: 0, padding: 0,
             }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2, #f0f0f0)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'none')}
           >
-            {isExpanded ? '\u25BE' : '\u25B8'}
+            <ChevronIcon expanded={isExpanded} />
           </button>
         ) : (
-          <span style={{ width: '14px', flexShrink: 0, display: 'inline-block' }} />
+          <span style={{ width: '22px', flexShrink: 0 }} />
         )}
         <button
           onClick={onNavigate}
           {...(isAdmin ? { ...attributes, ...listeners } : {})}
           style={{
-            background: isCurrent ? '#e8f0fe' : isParent ? '#f5f7fa' : 'none',
-            border: isCurrent ? '1px solid #c5d8f6' : '1px solid transparent',
-            borderLeft: isCurrent ? '3px solid var(--accent)' : isParent ? '3px solid #c5d8f6' : '3px solid transparent',
+            background: isCurrent ? 'rgba(59, 130, 246, 0.1)' : isParent ? 'rgba(59, 130, 246, 0.04)' : 'none',
+            border: 'none',
+            borderLeft: isCurrent ? '2px solid var(--accent)' : isParent ? '2px solid rgba(59, 130, 246, 0.25)' : '2px solid transparent',
             borderRadius: '4px',
             cursor: isAdmin ? 'grab' : 'pointer',
-            textAlign: 'left',
-            padding: '4px 8px',
+            textAlign: 'left' as const,
+            padding: '6px 10px',
             fontSize: '13px',
             color: isCurrent ? 'var(--accent)' : 'var(--text)',
-            fontWeight: isCurrent || isParent ? '600' : '400',
+            fontWeight: isCurrent ? '600' : isParent ? '500' : '400',
             flex: 1,
-            lineHeight: '1.4',
+            lineHeight: '1.5',
+            transition: 'background 0.1s',
           }}
+          onMouseEnter={e => { if (!isCurrent && !isParent) e.currentTarget.style.background = 'var(--bg-2, #f5f5f5)'; }}
+          onMouseLeave={e => { if (!isCurrent && !isParent) e.currentTarget.style.background = 'none'; }}
         >
           {cleanTitle}
         </button>
@@ -188,7 +221,6 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     })
   );
 
-  // Check admin status from kb_level cookie (set on login)
   useEffect(() => {
     const match = document.cookie.match(/(^| )kb_level=([^;]+)/);
     setIsAdmin(match ? match[2] === 'admin' : false);
@@ -297,7 +329,6 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     });
   };
 
-  /* --- Drag & Drop handlers --- */
   const handleDragStart = (event: DragStartEvent) => {
     setDragActiveId(event.active.id as string);
   };
@@ -365,7 +396,6 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     setDropTargetId(null);
   };
 
-  /* --- Render tree recursively --- */
   const renderTree = (nodes: TreeNode[], depth: number): React.ReactNode => {
     return nodes
       .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)))
@@ -391,7 +421,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
               onNavigate={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)}
             />
             {isExpanded && children.length > 0 && (
-              <div style={{ borderLeft: '1px solid var(--border)', marginLeft: `${depth * 12 + 7}px` }}>
+              <div style={{ marginLeft: `${depth * 20 + 19}px`, borderLeft: '1px solid rgba(0,0,0,0.06)', paddingLeft: '0' }}>
                 {renderTree(children, depth + 1)}
               </div>
             )}
@@ -433,19 +463,13 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
       </header>
 
       <div style={{ display: 'flex', flex: 1 }}>
-        {/* Sidebar */}
-        <aside style={{ width: '260px', flexShrink: 0, borderRight: '1px solid var(--border)', padding: '16px 0', overflowY: 'auto', height: 'calc(100vh - 56px)', position: 'sticky', top: '56px' }}>
-          <div style={{ padding: '0 16px 10px', fontSize: '11px', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>{SPACE_LABELS[space]}</span>
-            {isAdmin && (
-              <span style={{ fontSize: '10px', fontWeight: '500', color: 'var(--accent)', letterSpacing: '0', textTransform: 'none' }}>
-                drag to reorder
-              </span>
-            )}
+        <aside style={{ width: '280px', flexShrink: 0, borderRight: '1px solid var(--border)', padding: '20px 0', overflowY: 'auto', height: 'calc(100vh - 56px)', position: 'sticky', top: '56px', background: 'var(--bg)' }}>
+          <div style={{ padding: '0 20px 14px', fontSize: '11px', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+            {SPACE_LABELS[space]}
           </div>
-          <div style={{ padding: '0 6px' }}>
+          <div style={{ padding: '0 8px' }}>
             {Object.keys(sidebarTree).length === 0 ? (
-              <div style={{ padding: '8px 16px', fontSize: '13px', color: 'var(--text-muted)' }}>Loading...</div>
+              <div style={{ padding: '8px 20px', fontSize: '13px', color: 'var(--text-muted)' }}>Loading...</div>
             ) : (
               <DndContext
                 sensors={sensors}
@@ -459,15 +483,15 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
                 <DragOverlay dropAnimation={null}>
                   {draggedNode ? (
                     <div style={{
-                      padding: '4px 12px',
+                      padding: '6px 14px',
                       background: 'var(--bg)',
                       border: '1px solid var(--accent)',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       fontSize: '13px',
                       color: 'var(--accent)',
                       fontWeight: '500',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
-                      maxWidth: '220px',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                      maxWidth: '240px',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -481,7 +505,6 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
           </div>
         </aside>
 
-        {/* Main content */}
         <main style={{ flex: 1, padding: '48px 56px', minWidth: 0 }}>
           <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '28px', color: 'var(--text)' }}>{decodeTitle(title)}</h1>
           {loading ? (
