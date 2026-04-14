@@ -106,13 +106,15 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
           .filter(p => !p.parent || !(p.parent in tree))
           .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)));
         setRootNodes(roots);
-        // Auto-expand ancestors
+        // Auto-expand ancestors and direct parent
         const expanded = new Set<string>();
         let current = tree[fileName]?.parent;
         while (current && tree[current]) {
           expanded.add(current);
           current = tree[current].parent;
         }
+        // Also expand direct parent so siblings are visible
+        if (tree[fileName]?.parent) expanded.add(tree[fileName].parent!);
         setExpandedNodes(expanded);
       });
   }, [space, fileName]);
@@ -165,6 +167,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         const children = Object.values(sidebarTree).filter(n => n.parent === node.file);
         const isExpanded = expandedNodes.has(node.file);
         const isCurrent = node.file === fileName;
+        const isParent = node.file === sidebarTree[fileName]?.parent;
         const cleanTitle = decodeTitle(node.title);
         return (
           <div key={node.file}>
@@ -180,7 +183,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
               {children.length === 0 && <span style={{ width: '14px', flexShrink: 0, display: 'inline-block' }} />}
               <button
                 onClick={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)}
-                style={{ background: isCurrent ? '#e8f0fe' : 'none', border: isCurrent ? '1px solid #c5d8f6' : '1px solid transparent', borderLeft: isCurrent ? '3px solid var(--accent)' : '3px solid transparent', borderRadius: '4px', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)', fontWeight: isCurrent ? '600' : '400', flex: 1, lineHeight: '1.4' }}
+                style={{ background: isCurrent ? '#e8f0fe' : isParent ? '#f5f7fa' : 'none', border: isCurrent ? '1px solid #c5d8f6' : '1px solid transparent', borderLeft: isCurrent ? '3px solid var(--accent)' : isParent ? '3px solid #c5d8f6' : '3px solid transparent', borderRadius: '4px', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)', fontWeight: isCurrent || isParent ? '600' : '400', flex: 1, lineHeight: '1.4' }}
               >
                 {cleanTitle}
               </button>
