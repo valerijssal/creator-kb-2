@@ -2510,7 +2510,7 @@
     "14510030878.html": {
       "file": "14510030878.html",
       "title": "Shorthand Studio - Underscore Talent : 🎬 Natalie Cuomo – FB – FB Distribution",
-      "parent": "SHS-Creators-memo_12792823874.html"
+      "parent": null
     },
     "14526283777.html": {
       "file": "14526283777.html",
@@ -6203,11 +6203,6 @@
       "file": "Creator-Services---Managers%27-Space_12587860059.html",
       "title": "Creator Services : Creator Services - Managers&#39; Space",
       "parent": null
-    },
-    "Creator-Services---Useful-links_13108445497.html": {
-      "file": "Creator-Services---Useful-links_13108445497.html",
-      "title": "Creator Services : Creator Services - Useful links",
-      "parent": "12823920826.html"
     },
     "Creator-Services-Facebook-LDM-recaps_12384340583.html": {
       "file": "Creator-Services-Facebook-LDM-recaps_12384340583.html",
@@ -10864,11 +10859,6 @@
       "title": "Creator Services : Weeks 1-2",
       "parent": "Kseniia%27s-weekly-recaps_13260161568.html"
     },
-    "Weeks-12.08---23.08_12972392570.html": {
-      "file": "Weeks-12.08---23.08_12972392570.html",
-      "title": "Creator Services : Weeks 12.08 - 23.08",
-      "parent": "12823920826.html"
-    },
     "Weeks-15-16_12651888711.html": {
       "file": "Weeks-15-16_12651888711.html",
       "title": "Creator Services : Weeks 15-16",
@@ -11349,9 +11339,9 @@
       "title": "New Operation Instructions",
       "parent": null
     },
-    "new-operations_1776149207135.html": {
-      "file": "new-operations_1776149207135.html",
-      "title": "New Operations",
+    "new-operation-instructions_1776157640142.html": {
+      "file": "new-operation-instructions_1776157640142.html",
+      "title": "New Operation Instructions",
       "parent": null
     },
     "week-02.11---08.11_13230964777.html": {
@@ -13575,11 +13565,6 @@
       "file": "index.html",
       "title": "CSP (Creator Services Project)",
       "parent": "Ten-Work-Principles-in-Creator-Services_12834701536.html"
-    },
-    "new-operation-instructions_1776151457957.html": {
-      "file": "new-operation-instructions_1776151457957.html",
-      "title": "New Operation Instructions",
-      "parent": null
     }
   },
   "content-licensing": {
