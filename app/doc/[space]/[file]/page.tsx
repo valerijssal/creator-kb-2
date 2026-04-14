@@ -188,6 +188,10 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [newFolderTitle, setNewFolderTitle] = useState('');
   const [creatingFolder, setCreatingFolder] = useState(false);
+  const [docAccessLevel, setDocAccessLevel] = useState<string>('open');
+  const [showAccessMenu, setShowAccessMenu] = useState(false);
+  const [docAccessLevel, setDocAccessLevel] = useState<string>("open");
+  const [showAccessMenu, setShowAccessMenu] = useState(false);
   const [orderMap, setOrderMap] = useState<OrderMap>({});
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
@@ -226,6 +230,11 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
       });
 
     fetch('/api/order').then(r => r.json()).then(setOrderMap).catch(() => {});
+    fetch('/api/access').then(r => r.json()).then(data => {
+      if (data.access?.docs?.[fileName]) setDocAccessLevel(data.access.docs[fileName]);
+      else setDocAccessLevel('open');
+    }).catch(() => {});
+    fetch('/api/access').then(r => r.json()).then(data => { if (data.access?.docs?.[fileName]) setDocAccessLevel(data.access.docs[fileName]); else setDocAccessLevel('open'); }).catch(() => {});
   }, [space, fileName]);
 
   const getSortedChildren = useCallback((parentKey: string | null, children: TreeNode[]): TreeNode[] => {
@@ -296,6 +305,19 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
 
   const toggleNode = (nodeFile: string) => {
     setExpandedNodes(prev => { const next = new Set(prev); if (next.has(nodeFile)) next.delete(nodeFile); else next.add(nodeFile); return next; });
+  };
+
+  const handleAccessChange = async (level: string) => {
+    setShowAccessMenu(false);
+    setDocAccessLevel(level);
+    setReorderMsg('Updating access...');
+    const res = await fetch('/api/access', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ docs: { [fileName]: level } }),
+    });
+    if (res.ok) { setReorderMsg('Access updated.'); setTimeout(() => setReorderMsg(''), 2000); }
+    else { setReorderMsg('Failed to update access.'); setTimeout(() => setReorderMsg(''), 3000); }
   };
 
   const handleDragStart = (event: DragStartEvent) => { setDragActiveId(event.active.id as string); };
@@ -471,7 +493,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
               <button onClick={() => setShowCreateSub(true)} style={{ padding: '5px 12px', background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>+ Sub-page</button>
               <button onClick={() => setEditing(true)} style={{ padding: '5px 14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>Edit</button>
               <button onClick={() => setShowMoveModal(true)} style={{ padding: '5px 12px', background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>Move</button>
-              <button onClick={() => setShowDeleteConfirm(true)} style={{ padding: '5px 12px', background: 'none', color: 'var(--danger)', border: '1px solid var(--danger)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>Delete</button>
+              <button onClick={() => setShowDeleteConfirm(true)} style={{ padding: "5px 12px", background: "none", color: "var(--danger)", border: "1px solid var(--danger)", borderRadius: "6px", fontSize: "13px", cursor: "pointer" }}>Delete</button>
             </>
           ) : (
             <>
