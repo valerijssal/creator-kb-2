@@ -66,7 +66,27 @@ export async function POST(request: NextRequest) {
     }
   } catch { }
 
-  // Sample up to 60 files — fetch their content and pass to Claude
+  // First: fast title search across all files using titles.json
+  const titleResults: {title: string; path: string; space: string; spaceLabel: string}[] = [];
+  const queryLower = query.toLowerCase();
+  for (const file of files) {
+    const title = titles[file.name] || '';
+    if (title.toLowerCase().includes(queryLower) || file.name.toLowerCase().includes(queryLower)) {
+      titleResults.push({ title: title || file.name, path: file.path, space: file.space, spaceLabel: file.spaceLabel });
+    }
+  }
+  if (titleResults.length > 0) {
+    const results = titleResults.slice(0, 10).map(r => ({
+      title: r.title.replace(/^[^:]+:\s*/, ''),
+      path: r.path,
+      space: r.space,
+      spaceLabel: r.spaceLabel,
+      reason: 'Title match',
+    }));
+    return NextResponse.json({ results });
+  }
+
+  // Fallback: Sample up to 60 files — fetch their content and pass to Claude
   const sample = files.slice(0, 60);
   const docs = await Promise.all(
     sample.map(async (f) => {
