@@ -61,7 +61,7 @@ export default function Home() {
     <div style={{ minHeight: '100vh' }}>
       {/* Header */}
       <header style={{ padding: '0 48px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '28px', height: '28px', background: 'var(--text)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ width: '14px', height: '14px', background: 'var(--pink)', borderRadius: '3px' }} />
           </div>
@@ -72,13 +72,13 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <div style={{ position: 'relative', overflow: 'hidden', padding: '80px 48px 64px', maxWidth: '860px', margin: '0 auto' }}>
+      <div style={{ position: 'relative', overflow: 'hidden', padding: '80px 48px 64px', maxWidth: '1080px', margin: '0 auto' }}>
         {/* Blob decorations */}
         <div style={{ position: 'absolute', top: '20px', right: '-40px', width: '320px', height: '280px', background: 'linear-gradient(135deg, #a78bfa, #ec4899)', borderRadius: '60% 40% 70% 30% / 50% 60% 40% 50%', opacity: 0.15, pointerEvents: 'none', zIndex: 0 }} />
         <div style={{ position: 'absolute', bottom: '-20px', left: '20%', width: '200px', height: '180px', background: 'linear-gradient(135deg, #34d399, #06b6d4)', borderRadius: '40% 60% 30% 70% / 60% 40% 50% 50%', opacity: 0.15, pointerEvents: 'none', zIndex: 0 }} />
 
         <div style={{ position: 'relative' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--pink)', color: '#fff', fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '5px 14px', borderRadius: '20px', marginBottom: '24px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--accent)', color: '#fff', fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '5px 14px', borderRadius: '20px', marginBottom: '24px' }}>
             Knowledge Base
           </div>
           <h1 style={{ fontSize: '56px', fontWeight: '900', lineHeight: 1.0, letterSpacing: '-2px', marginBottom: '0', color: 'var(--text)', textTransform: 'uppercase' }}>
@@ -125,8 +125,8 @@ export default function Home() {
       </div>
 
       {/* Spaces */}
-      <main style={{ maxWidth: '860px', margin: '0 auto', padding: '0 48px 80px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+      <main style={{ maxWidth: '1080px', margin: '0 auto', padding: '0 48px 80px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
           {visibleSpaces.map((space, i) => (
             <button
               key={space.slug}
