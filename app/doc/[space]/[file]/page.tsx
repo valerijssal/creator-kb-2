@@ -75,7 +75,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         setLoading(false);
         fetch(`/api/tree?space=${space}`)
           .then(r => r.json())
-          .then((tree: Record<string, {title: string; parent: string | null}>) => {
+          .then((tree: Record<string, {file: string; title: string; parent: string | null}>) => {
             if (tree[fileName]) setTitle(tree[fileName].title);
             setSidebarTree(tree);
             // Auto-expand ancestors of current file
