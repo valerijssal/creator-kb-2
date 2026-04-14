@@ -52,12 +52,15 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const [moveTarget, setMoveTarget] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [actionMsg, setActionMsg] = useState('');
+  const [isStandalonePage, setIsStandalonePage] = useState(false);
 
   useEffect(() => {
     fetch(`/api/files?path=${encodeURIComponent(getFilePath(space, fileName))}`)
       .then(r => r.json())
       .then(data => {
-        setContent(data.content || '');
+        const raw = data.content || '';
+        setContent(raw);
+        setIsStandalonePage(raw.includes('<!DOCTYPE') && raw.includes('<style>'));
         setSha(data.sha || '');
         setEditContent(extractBodyContent(data.content || ''));
         setLoading(false);
@@ -99,7 +102,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     if (res.ok) router.push(`/space/${moveTarget}`);
   };
 
-  const isStandalonePage = content.includes('<style>') && content.includes('<!DOCTYPE');
+
   const bodyContent = extractBodyContent(content);
 
   return (
