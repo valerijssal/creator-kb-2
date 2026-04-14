@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   let titles: Record<string, string> = {};
   try {
     const appRepo = process.env.GITHUB_APP_REPO || 'creator-kb-2';
-    const { data } = await octokit.repos.getContent({ owner, repo: appRepo, path: 'public/titles.json' });
+    const { data } = await octokit.repos.getContent({ owner, repo: appRepo, path: 'public/titles.json', headers: { 'Cache-Control': 'no-cache' } });
     if ('content' in data) {
       titles = JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'));
     }
