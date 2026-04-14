@@ -133,10 +133,10 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
         </button>
         <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
           onChange={e => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+        />
         <button onClick={handleGoogleEmbed} style={{ padding: '4px 10px', background: 'none', border: '1px solid var(--border)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: '500', cursor: 'pointer' }}>
           🔗 Google Embed
         </button>
-        />
         {divider()}
         {btn(() => editor.chain().focus().undo().run(), '↩')}
         {btn(() => editor.chain().focus().redo().run(), '↪')}
