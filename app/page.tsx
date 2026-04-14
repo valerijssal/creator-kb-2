@@ -90,7 +90,7 @@ export default function Home() {
           </p>
 
           {/* Search */}
-          <div style={{ position: 'relative', maxWidth: '520px', zIndex: 200 }}>
+          <div style={{ position: 'relative', maxWidth: '520px', zIndex: 9999 }}>
             <input
               type="text"
               placeholder={loaded ? 'Search across all 3,000+ documents...' : 'Loading...'}
@@ -102,7 +102,7 @@ export default function Home() {
               onBlur={e => e.currentTarget.style.borderColor = 'var(--text)'}
             />
             {query && results.length > 0 && (
-              <div style={{ position: 'fixed', top: '280px', left: '50%', transform: 'translateX(-50%)', width: '520px', background: '#fff', border: '2px solid var(--text)', borderRadius: '12px', overflow: 'hidden', zIndex: 9999, boxShadow: '4px 4px 0 var(--text)' }}>
+              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, background: '#fff', border: '2px solid var(--text)', borderRadius: '12px', overflow: 'hidden', zIndex: 9999, boxShadow: '4px 4px 0 var(--text)' }}>
                 {results.map((r, i) => (
                   <button key={i} onClick={() => router.push('/doc/' + r.space + '/' + encodeURIComponent(r.file))}
                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '10px 16px', background: 'none', border: 'none', borderBottom: i < results.length - 1 ? '1px solid var(--border)' : 'none', cursor: 'pointer', textAlign: 'left' }}
@@ -116,7 +116,7 @@ export default function Home() {
               </div>
             )}
             {query && results.length === 0 && loaded && (
-              <div style={{ position: 'fixed', top: '280px', left: '50%', transform: 'translateX(-50%)', width: '520px', background: '#fff', border: '2px solid var(--text)', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: 'var(--text-muted)', zIndex: 9999 }}>
+              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, background: '#fff', border: '2px solid var(--text)', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: 'var(--text-muted)', zIndex: 9999 }}>
                 No documents found.
               </div>
             )}
