@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, use } from 'react';
+import React, { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
@@ -52,6 +52,8 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const [moveTarget, setMoveTarget] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [actionMsg, setActionMsg] = useState('');
+  const [sidebarTree, setSidebarTree] = useState<Record<string, {file: string; title: string; parent: string | null}>>({});
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [isStandalonePage, setIsStandalonePage] = useState(false);
 
   useEffect(() => {
@@ -73,8 +75,17 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         setLoading(false);
         fetch(`/api/tree?space=${space}`)
           .then(r => r.json())
-          .then((tree: Record<string, {title: string}>) => {
+          .then((tree: Record<string, {title: string; parent: string | null}>) => {
             if (tree[fileName]) setTitle(tree[fileName].title);
+            setSidebarTree(tree);
+            // Auto-expand ancestors of current file
+            const expanded = new Set<string>();
+            let current = tree[fileName]?.parent;
+            while (current && tree[current]) {
+              expanded.add(current);
+              current = tree[current].parent;
+            }
+            setExpandedNodes(expanded);
           });
       });
   }, [space, fileName]);
@@ -112,8 +123,48 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
 
   const bodyContent = extractBodyContent(content);
 
+  // Build tree structure for sidebar
+  const rootNodes = Object.values(sidebarTree).filter(p => !p.parent || !sidebarTree[p.parent]);
+  const getChildren = (file: string) => Object.values(sidebarTree).filter(p => p.parent === file);
+
+  const toggleNode = (file: string) => {
+    setExpandedNodes(prev => {
+      const next = new Set(prev);
+      if (next.has(file)) next.delete(file);
+      else next.add(file);
+      return next;
+    });
+  };
+
+  const renderTree = (nodes: {file: string; title: string; parent: string | null}[], depth: number): React.ReactNode => {
+    return nodes.map(node => {
+      const children = getChildren(node.file);
+      const isExpanded = expandedNodes.has(node.file);
+      const isCurrent = node.file === fileName;
+      return (
+        <div key={node.file}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', paddingLeft: `${depth * 14}px` }}>
+            {children.length > 0 && (
+              <button onClick={() => toggleNode(node.file)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '10px', padding: '0 2px', flexShrink: 0 }}>
+                {isExpanded ? '▾' : '▸'}
+              </button>
+            )}
+            {children.length === 0 && <span style={{ width: '14px', flexShrink: 0 }} />}
+            <button
+              onClick={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)}
+              style={{ background: isCurrent ? 'var(--accent-light)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', borderRadius: '4px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)', fontWeight: isCurrent ? '600' : '400', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+            >
+              {node.title}
+            </button>
+          </div>
+          {isExpanded && children.length > 0 && renderTree(children, depth + 1)}
+        </div>
+      );
+    });
+  };
+
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       <header style={{ borderBottom: '1px solid var(--border)', padding: '0 40px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg)', position: 'sticky', top: 0, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-muted)', overflow: 'hidden' }}>
           <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', whiteSpace: 'nowrap' }}>Home</button>
@@ -139,7 +190,18 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         </div>
       </header>
 
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 40px' }}>
+      <div style={{ display: 'flex', flex: 1, maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+        {/* Sidebar */}
+        <aside style={{ width: '260px', flexShrink: 0, borderRight: '1px solid var(--border)', padding: '24px 0', overflowY: 'auto', maxHeight: 'calc(100vh - 56px)', position: 'sticky', top: '56px' }}>
+          <div style={{ padding: '0 16px 12px', fontSize: '11px', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+            {SPACE_LABELS[space]}
+          </div>
+          <div style={{ padding: '0 8px' }}>
+            {rootNodes.length > 0 ? renderTree(rootNodes, 0) : <div style={{ padding: '8px 16px', fontSize: '13px', color: 'var(--text-muted)' }}>Loading...</div>}
+          </div>
+        </aside>
+        {/* Main content */}
+        <main style={{ flex: 1, padding: '48px 48px', minWidth: 0 }}>
         <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '28px', color: 'var(--text)' }}>{title}</h1>
         {loading ? (
           <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
@@ -150,7 +212,8 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         ) : (
           <div className="doc-content" dangerouslySetInnerHTML={{ __html: bodyContent }} />
         )}
-      </main>
+        </main>
+      </div>
 
       {showMoveModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
