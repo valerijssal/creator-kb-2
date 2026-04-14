@@ -90,7 +90,7 @@ export default function Home() {
           </p>
 
           {/* Search */}
-          <div style={{ position: 'relative', maxWidth: '520px' }}>
+          <div style={{ position: 'relative', maxWidth: '520px', isolation: 'isolate', zIndex: 20 }}>
             <input
               type="text"
               placeholder={loaded ? 'Search across all 3,000+ documents...' : 'Loading...'}
