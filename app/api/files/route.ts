@@ -45,7 +45,7 @@ export async function DELETE(request: NextRequest) {
       const titles = JSON.parse(titlesFile.content);
       if (titles[fileName]) {
         delete titles[fileName];
-        await updateFileContent('public/titles.json', JSON.stringify(titles, null, 2), titlesFile.sha);
+        await updateFileContent('public/titles.json', JSON.stringify(titles, null, 2), titlesFile.sha, `Remove ${fileName} from titles`);
       }
     }
   } catch {}
@@ -60,7 +60,7 @@ export async function DELETE(request: NextRequest) {
           changed = true;
         }
       }
-      if (changed) await updateFileContent('public/tree.json', JSON.stringify(tree, null, 2), treeFile.sha);
+      if (changed) await updateFileContent('public/tree.json', JSON.stringify(tree, null, 2), treeFile.sha, `Remove ${fileName} from tree`);
     }
   } catch {}
 
