@@ -77,7 +77,7 @@ export default function Home() {
         <div style={{ position: 'absolute', top: '20px', right: '-40px', width: '320px', height: '280px', background: 'linear-gradient(135deg, #a78bfa, #ec4899)', borderRadius: '60% 40% 70% 30% / 50% 60% 40% 50%', opacity: 0.15, pointerEvents: 'none', zIndex: 0 }} />
         <div style={{ position: 'absolute', bottom: '-20px', left: '20%', width: '200px', height: '180px', background: 'linear-gradient(135deg, #34d399, #06b6d4)', borderRadius: '40% 60% 30% 70% / 60% 40% 50% 50%', opacity: 0.15, pointerEvents: 'none', zIndex: 0 }} />
 
-        <div style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{ position: 'relative' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--pink)', color: '#fff', fontSize: '11px', fontWeight: '700', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '5px 14px', borderRadius: '20px', marginBottom: '24px' }}>
             Knowledge Base
           </div>
