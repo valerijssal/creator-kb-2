@@ -124,7 +124,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const bodyContent = extractBodyContent(content);
 
   // Build tree structure for sidebar
-  const rootNodes = Object.values(sidebarTree).filter(p => !p.parent || !sidebarTree[p.parent]);
+  const rootNodes = Object.values(sidebarTree).filter(p => !p.parent || !(p.parent in sidebarTree));
   const childMap: Record<string, {file: string; title: string; parent: string | null}[]> = {};
   Object.values(sidebarTree).forEach(node => {
     if (node.parent) {
