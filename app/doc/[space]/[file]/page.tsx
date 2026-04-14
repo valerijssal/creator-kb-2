@@ -172,7 +172,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
               {children.length > 0 && (
                 <button
                   onClick={() => toggleNode(node.file)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '11px', padding: '5px 2px 0', flexShrink: 0, width: '14px' }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '16px', padding: '2px 2px 0', flexShrink: 0, width: '20px', lineHeight: 1 }}
                 >
                   {isExpanded ? '▾' : '▸'}
                 </button>
@@ -180,7 +180,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
               {children.length === 0 && <span style={{ width: '14px', flexShrink: 0, display: 'inline-block' }} />}
               <button
                 onClick={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)}
-                style={{ background: isCurrent ? 'var(--accent-light)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', borderRadius: '4px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)', fontWeight: isCurrent ? '600' : '400', flex: 1, lineHeight: '1.4' }}
+                style={{ background: isCurrent ? '#e8f0fe' : 'none', border: isCurrent ? '1px solid #c5d8f6' : '1px solid transparent', borderLeft: isCurrent ? '3px solid var(--accent)' : '3px solid transparent', borderRadius: '4px', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)', fontWeight: isCurrent ? '600' : '400', flex: 1, lineHeight: '1.4' }}
               >
                 {cleanTitle}
               </button>
