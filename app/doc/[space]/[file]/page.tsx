@@ -302,7 +302,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     setDragActiveId(event.active.id as string);
   };
 
-  const handleDragOver = (event: { over: { id: string } | null }) => {
+  const handleDragOver = (event: any) => {
     setDropTargetId(event.over?.id as string || null);
   };
 
