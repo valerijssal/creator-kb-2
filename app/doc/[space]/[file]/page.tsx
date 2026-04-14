@@ -11,6 +11,7 @@ import {
   useSensors,
   DragStartEvent,
   DragEndEvent,
+  useDroppable,
 } from '@dnd-kit/core';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -82,6 +83,29 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+/* --- Root drop zone (space header) --- */
+function RootDropZone({ label, isOver }: { label: string; isOver: boolean }) {
+  const { setNodeRef } = useDroppable({ id: '__ROOT__' });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        padding: '0 20px 14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: isOver ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
+        borderRadius: '6px',
+        transition: 'background 0.15s',
+      }}
+    >
+      <span style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', color: isOver ? 'var(--accent)' : 'var(--text-muted)' }}>
+        {isOver ? 'Drop here to move to root' : label}
+      </span>
+    </div>
   );
 }
 
@@ -363,21 +387,29 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     if (!over || active.id === over.id) return;
 
     const draggedFile = active.id as string;
-    const targetFile = over.id as string;
+    const isRootDrop = over.id === '__ROOT__';
+    const targetFile = isRootDrop ? null : over.id as string;
 
     const currentParent = sidebarTree[draggedFile]?.parent;
-    const newParent = currentParent === targetFile ? null : targetFile;
+    const newParent = isRootDrop ? null : targetFile;
 
-    let check = newParent;
-    while (check && sidebarTree[check]) {
-      if (check === draggedFile) {
-        setReorderMsg('Cannot move a folder into its own child.');
-        setTimeout(() => setReorderMsg(''), 3000);
-        return;
+    // Skip if already at target
+    if (currentParent === newParent) return;
+
+    // Circular ref check
+    if (newParent) {
+      let check: string | null = newParent;
+      while (check && sidebarTree[check]) {
+        if (check === draggedFile) {
+          setReorderMsg('Cannot move a folder into its own child.');
+          setTimeout(() => setReorderMsg(''), 3000);
+          return;
+        }
+        check = sidebarTree[check].parent;
       }
-      check = sidebarTree[check].parent;
     }
 
+    // Optimistic update
     setSidebarTree(prev => ({
       ...prev,
       [draggedFile]: { ...prev[draggedFile], parent: newParent },
@@ -482,66 +514,66 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
 
       <div style={{ display: 'flex', flex: 1 }}>
         <aside style={{ width: '280px', flexShrink: 0, borderRight: '1px solid var(--border)', padding: '20px 0', overflowY: 'auto', height: 'calc(100vh - 56px)', position: 'sticky', top: '56px', background: 'var(--bg)' }}>
-          <div style={{ padding: '0 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              {SPACE_LABELS[space]}
-            </span>
-            {isAdmin && (
-              <button
-                onClick={() => setShowNewFolder(true)}
-                title="New folder"
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', width: '24px', height: '24px',
-                  borderRadius: '4px', padding: 0,
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2, #f0f0f0)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M2 4.5C2 3.67 2.67 3 3.5 3H6.29a1 1 0 0 1 .7.29L8 4.3h4.5c.83 0 1.5.67 1.5 1.5V11.5c0 .83-.67 1.5-1.5 1.5h-9A1.5 1.5 0 0 1 2 11.5V4.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" fill="none"/>
-                  <path d="M8 7v4M6 9h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                </svg>
-              </button>
-            )}
-          </div>
-          <div style={{ padding: '0 8px' }}>
-            {Object.keys(sidebarTree).length === 0 ? (
-              <div style={{ padding: '8px 20px', fontSize: '13px', color: 'var(--text-muted)' }}>Loading...</div>
-            ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDragEnd={handleDragEnd}
-                onDragCancel={handleDragCancel}
-              >
-                {renderTree(getRoots(), 0)}
-                <DragOverlay dropAnimation={null}>
-                  {draggedNode ? (
-                    <div style={{
-                      padding: '6px 14px',
-                      background: 'var(--bg)',
-                      border: '1px solid var(--accent)',
-                      borderRadius: '8px',
-                      fontSize: '13px',
-                      color: 'var(--accent)',
-                      fontWeight: '500',
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                      maxWidth: '240px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {decodeTitle(draggedNode.title)}
-                    </div>
-                  ) : null}
-                </DragOverlay>
-              </DndContext>
-            )}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px 14px' }}>
+              <RootDropZone label={SPACE_LABELS[space]} isOver={dropTargetId === '__ROOT__' && !!dragActiveId} />
+              {isAdmin && (
+                <button
+                  onClick={() => setShowNewFolder(true)}
+                  title="New folder"
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', width: '24px', height: '24px',
+                    borderRadius: '4px', padding: 0, flexShrink: 0,
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2, #f0f0f0)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M2 4.5C2 3.67 2.67 3 3.5 3H6.29a1 1 0 0 1 .7.29L8 4.3h4.5c.83 0 1.5.67 1.5 1.5V11.5c0 .83-.67 1.5-1.5 1.5h-9A1.5 1.5 0 0 1 2 11.5V4.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" fill="none"/>
+                    <path d="M8 7v4M6 9h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              )}
+            </div>
+            <div style={{ padding: '0 8px' }}>
+              {Object.keys(sidebarTree).length === 0 ? (
+                <div style={{ padding: '8px 20px', fontSize: '13px', color: 'var(--text-muted)' }}>Loading...</div>
+              ) : (
+                <>
+                  {renderTree(getRoots(), 0)}
+                  <DragOverlay dropAnimation={null}>
+                    {draggedNode ? (
+                      <div style={{
+                        padding: '6px 14px',
+                        background: 'var(--bg)',
+                        border: '1px solid var(--accent)',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        color: 'var(--accent)',
+                        fontWeight: '500',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                        maxWidth: '240px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {decodeTitle(draggedNode.title)}
+                      </div>
+                    ) : null}
+                  </DragOverlay>
+                </>
+              )}
+            </div>
+          </DndContext>
         </aside>
 
         <main style={{ flex: 1, padding: '48px 56px', minWidth: 0 }}>
