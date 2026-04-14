@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, use } from 'react';
+import React, { useEffect, useState, use, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
@@ -139,18 +139,19 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     });
   };
 
-  // Build childMap once from sidebarTree
-  const childMap: Record<string, TreeNode[]> = {};
-  Object.values(sidebarTree).forEach(node => {
-    if (node.parent && node.parent in sidebarTree) {
-      if (!childMap[node.parent]) childMap[node.parent] = [];
-      childMap[node.parent].push(node);
-    }
-  });
-
-  const rootNodes = Object.values(sidebarTree)
-    .filter(p => !p.parent || !(p.parent in sidebarTree))
-    .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)));
+  const { childMap, rootNodes } = useMemo(() => {
+    const childMap: Record<string, TreeNode[]> = {};
+    Object.values(sidebarTree).forEach(node => {
+      if (node.parent && node.parent in sidebarTree) {
+        if (!childMap[node.parent]) childMap[node.parent] = [];
+        childMap[node.parent].push(node);
+      }
+    });
+    const rootNodes = Object.values(sidebarTree)
+      .filter(p => !p.parent || !(p.parent in sidebarTree))
+      .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)));
+    return { childMap, rootNodes };
+  }, [sidebarTree]);
 
   const renderTree = (nodes: TreeNode[], depth: number): React.ReactNode => {
     return nodes
