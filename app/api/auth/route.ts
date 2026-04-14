@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     path: '/',
   });
   response.cookies.set('kb_level', level, {
-    httpOnly: true,
+    httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24 * 7,
     path: '/',
