@@ -152,6 +152,22 @@ export default function Home() {
               <span style={{ fontSize: '18px', color: 'var(--text-muted)' }}>→</span>
             </button>
           ))}
+          {visibleSpaces.length % 2 === 1 && (
+            <button
+              onClick={() => alert('Space creation coming soon.')}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                padding: '20px 24px', background: 'none',
+                border: '2px dashed var(--border)', borderRadius: '10px',
+                cursor: 'pointer', width: '100%', transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.background = 'rgba(59, 130, 246, 0.03)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'none'; }}
+            >
+              <span style={{ width: '32px', height: '32px', borderRadius: '50%', border: '2px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: 'var(--text-muted)' }}>+</span>
+              <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: '500' }}>New space</span>
+            </button>
+          )}
         </div>
 
         <div style={{ marginTop: '48px', paddingTop: '24px', borderTop: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
