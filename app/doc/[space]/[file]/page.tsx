@@ -143,7 +143,15 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
 
   const handleDelete = async () => {
     const res = await fetch('/api/files', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: getFilePath(space, fileName), sha }) });
-    if (res.ok) router.push(`/space/${space}`);
+    if (res.ok) {
+      setShowDeleteConfirm(false);
+      setActionMsg('Document deleted successfully.');
+      setTimeout(() => router.push(`/space/${space}`), 1500);
+    } else {
+      setShowDeleteConfirm(false);
+      setActionMsg('Failed to delete document.');
+      setTimeout(() => setActionMsg(''), 3000);
+    }
   };
 
   const handleMove = async () => {
