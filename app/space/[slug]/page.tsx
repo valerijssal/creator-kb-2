@@ -18,7 +18,7 @@ interface PageNode {
 }
 
 function cleanTitle(title: string): string {
-  return title.replace(/^[^:]+:\s*/, '').trim();
+  return title.replace(/^[^:]+:\s*/, '').replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
 }
 
 function buildTree(pages: Record<string, PageNode>): PageNode[] {
