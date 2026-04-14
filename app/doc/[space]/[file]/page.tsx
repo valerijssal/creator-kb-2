@@ -1,7 +1,19 @@
 'use client';
-import React, { useEffect, useState, use } from 'react';
+import React, { useEffect, useState, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const RichEditor = dynamic(() => import('@/components/RichEditor'), { ssr: false });
 
@@ -49,6 +61,101 @@ function decodeTitle(title: string): string {
     .replace(/&gt;/g, '>');
 }
 
+/* --- Draggable tree item --- */
+function DraggableTreeItem({
+  node,
+  depth,
+  isAdmin,
+  isCurrent,
+  isParent,
+  isExpanded,
+  hasChildren,
+  isDropTarget,
+  onToggle,
+  onNavigate,
+}: {
+  node: TreeNode;
+  depth: number;
+  isAdmin: boolean;
+  isCurrent: boolean;
+  isParent: boolean;
+  isExpanded: boolean;
+  hasChildren: boolean;
+  isDropTarget: boolean;
+  onToggle: () => void;
+  onNavigate: () => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: node.file,
+    disabled: !isAdmin,
+  });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
+
+  const cleanTitle = decodeTitle(node.title);
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          paddingLeft: `${depth * 12}px`,
+          background: isDropTarget ? '#e8f0fe' : 'transparent',
+          borderRadius: isDropTarget ? '4px' : undefined,
+          transition: 'background 0.15s',
+        }}
+      >
+        {hasChildren ? (
+          <button
+            onClick={onToggle}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--text-muted)', fontSize: '16px',
+              padding: '2px 2px 0', flexShrink: 0, width: '20px', lineHeight: 1,
+            }}
+          >
+            {isExpanded ? '\u25BE' : '\u25B8'}
+          </button>
+        ) : (
+          <span style={{ width: '14px', flexShrink: 0, display: 'inline-block' }} />
+        )}
+        <button
+          onClick={onNavigate}
+          {...(isAdmin ? { ...attributes, ...listeners } : {})}
+          style={{
+            background: isCurrent ? '#e8f0fe' : isParent ? '#f5f7fa' : 'none',
+            border: isCurrent ? '1px solid #c5d8f6' : '1px solid transparent',
+            borderLeft: isCurrent ? '3px solid var(--accent)' : isParent ? '3px solid #c5d8f6' : '3px solid transparent',
+            borderRadius: '4px',
+            cursor: isAdmin ? 'grab' : 'pointer',
+            textAlign: 'left',
+            padding: '4px 8px',
+            fontSize: '13px',
+            color: isCurrent ? 'var(--accent)' : 'var(--text)',
+            fontWeight: isCurrent || isParent ? '600' : '400',
+            flex: 1,
+            lineHeight: '1.4',
+          }}
+        >
+          {cleanTitle}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function DocPage({ params }: { params: Promise<{ space: string; file: string }> }) {
   const { space, file } = use(params);
   const router = useRouter();
@@ -69,9 +176,23 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const [subTitle, setSubTitle] = useState('');
   const [creatingSub, setCreatingSub] = useState(false);
   const [sidebarTree, setSidebarTree] = useState<Record<string, TreeNode>>({});
-  const [childMap, setChildMap] = useState<Record<string, TreeNode[]>>({});
-  const [rootNodes, setRootNodes] = useState<TreeNode[]>([]);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [dragActiveId, setDragActiveId] = useState<string | null>(null);
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null);
+  const [reorderMsg, setReorderMsg] = useState('');
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    })
+  );
+
+  // Check admin status from kb_level cookie (set on login)
+  useEffect(() => {
+    const match = document.cookie.match(/(^| )kb_level=([^;]+)/);
+    setIsAdmin(match ? match[2] === 'admin' : false);
+  }, []);
 
   useEffect(() => {
     fetch(`/api/files?path=${encodeURIComponent(getFilePath(space, fileName))}`)
@@ -95,32 +216,22 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
       .then((tree: Record<string, TreeNode>) => {
         if (tree[fileName]) setTitle(tree[fileName].title);
         setSidebarTree(tree);
-        // Build childMap
-        const cm: Record<string, TreeNode[]> = {};
-        Object.values(tree).forEach(node => {
-          if (node.parent && node.parent in tree) {
-            if (!cm[node.parent]) cm[node.parent] = [];
-            cm[node.parent].push(node);
-          }
-        });
-        setChildMap(cm);
-        // Build rootNodes
-        const roots = Object.values(tree)
-          .filter(p => !p.parent || !(p.parent in tree))
-          .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)));
-        setRootNodes(roots);
-        // Auto-expand ancestors and direct parent
         const expanded = new Set<string>();
         let current = tree[fileName]?.parent;
         while (current && tree[current]) {
           expanded.add(current);
           current = tree[current].parent;
         }
-        // Also expand direct parent so siblings are visible
         if (tree[fileName]?.parent) expanded.add(tree[fileName].parent!);
         setExpandedNodes(expanded);
       });
   }, [space, fileName]);
+
+  const getRoots = useCallback((): TreeNode[] => {
+    return Object.values(sidebarTree)
+      .filter(p => !p.parent || !(p.parent in sidebarTree))
+      .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)));
+  }, [sidebarTree]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -186,8 +297,75 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     });
   };
 
+  /* --- Drag & Drop handlers --- */
+  const handleDragStart = (event: DragStartEvent) => {
+    setDragActiveId(event.active.id as string);
+  };
 
+  const handleDragOver = (event: { over: { id: string } | null }) => {
+    setDropTargetId(event.over?.id as string || null);
+  };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setDragActiveId(null);
+    setDropTargetId(null);
+
+    if (!over || active.id === over.id) return;
+
+    const draggedFile = active.id as string;
+    const targetFile = over.id as string;
+
+    const currentParent = sidebarTree[draggedFile]?.parent;
+    const newParent = currentParent === targetFile ? null : targetFile;
+
+    let check = newParent;
+    while (check && sidebarTree[check]) {
+      if (check === draggedFile) {
+        setReorderMsg('Cannot move a folder into its own child.');
+        setTimeout(() => setReorderMsg(''), 3000);
+        return;
+      }
+      check = sidebarTree[check].parent;
+    }
+
+    setSidebarTree(prev => ({
+      ...prev,
+      [draggedFile]: { ...prev[draggedFile], parent: newParent },
+    }));
+
+    if (newParent) {
+      setExpandedNodes(prev => new Set([...prev, newParent]));
+    }
+
+    setReorderMsg('Moving...');
+
+    const res = await fetch('/api/tree/reorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ space, file: draggedFile, newParent }),
+    });
+
+    if (res.ok) {
+      setReorderMsg('Moved.');
+      setTimeout(() => setReorderMsg(''), 2000);
+    } else {
+      setSidebarTree(prev => ({
+        ...prev,
+        [draggedFile]: { ...prev[draggedFile], parent: currentParent ?? null },
+      }));
+      const err = await res.json().catch(() => ({ error: 'Move failed' }));
+      setReorderMsg(err.error || 'Move failed.');
+      setTimeout(() => setReorderMsg(''), 3000);
+    }
+  };
+
+  const handleDragCancel = () => {
+    setDragActiveId(null);
+    setDropTargetId(null);
+  };
+
+  /* --- Render tree recursively --- */
   const renderTree = (nodes: TreeNode[], depth: number): React.ReactNode => {
     return nodes
       .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)))
@@ -195,27 +373,23 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         const children = Object.values(sidebarTree).filter(n => n.parent === node.file);
         const isExpanded = expandedNodes.has(node.file);
         const isCurrent = node.file === fileName;
-        const isParent = node.file === sidebarTree[fileName]?.parent;
-        const cleanTitle = decodeTitle(node.title);
+        const isParentNode = node.file === sidebarTree[fileName]?.parent;
+        const isTarget = dropTargetId === node.file && dragActiveId !== node.file;
+
         return (
           <div key={node.file}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', paddingLeft: `${depth * 12}px` }}>
-              {children.length > 0 && (
-                <button
-                  onClick={() => toggleNode(node.file)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '16px', padding: '2px 2px 0', flexShrink: 0, width: '20px', lineHeight: 1 }}
-                >
-                  {isExpanded ? '▾' : '▸'}
-                </button>
-              )}
-              {children.length === 0 && <span style={{ width: '14px', flexShrink: 0, display: 'inline-block' }} />}
-              <button
-                onClick={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)}
-                style={{ background: isCurrent ? '#e8f0fe' : isParent ? '#f5f7fa' : 'none', border: isCurrent ? '1px solid #c5d8f6' : '1px solid transparent', borderLeft: isCurrent ? '3px solid var(--accent)' : isParent ? '3px solid #c5d8f6' : '3px solid transparent', borderRadius: '4px', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)', fontWeight: isCurrent || isParent ? '600' : '400', flex: 1, lineHeight: '1.4' }}
-              >
-                {cleanTitle}
-              </button>
-            </div>
+            <DraggableTreeItem
+              node={node}
+              depth={depth}
+              isAdmin={isAdmin}
+              isCurrent={isCurrent}
+              isParent={isParentNode}
+              isExpanded={isExpanded}
+              hasChildren={children.length > 0}
+              isDropTarget={isTarget}
+              onToggle={() => toggleNode(node.file)}
+              onNavigate={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)}
+            />
             {isExpanded && children.length > 0 && (
               <div style={{ borderLeft: '1px solid var(--border)', marginLeft: `${depth * 12 + 7}px` }}>
                 {renderTree(children, depth + 1)}
@@ -226,6 +400,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
       });
   };
 
+  const draggedNode = dragActiveId ? sidebarTree[dragActiveId] : null;
   const bodyContent = extractBodyContent(content);
 
   return (
@@ -233,13 +408,14 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
       <header style={{ borderBottom: '1px solid var(--border)', padding: '0 40px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg)', position: 'sticky', top: 0, zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-muted)', overflow: 'hidden' }}>
           <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', whiteSpace: 'nowrap' }}>Home</button>
-          <span>›</span>
+          <span>{'\u203A'}</span>
           <button onClick={() => router.push(`/space/${space}`)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px', whiteSpace: 'nowrap' }}>{SPACE_LABELS[space]}</button>
-          <span>›</span>
+          <span>{'\u203A'}</span>
           <span style={{ color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{decodeTitle(title)}</span>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
           {actionMsg && <span style={{ color: 'var(--accent)', fontSize: '13px' }}>{actionMsg}</span>}
+          {reorderMsg && <span style={{ color: 'var(--accent)', fontSize: '13px' }}>{reorderMsg}</span>}
           {!editing ? (
             <>
               <button onClick={() => setShowCreateSub(true)} style={{ padding: '5px 12px', background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>+ Sub-page</button>
@@ -259,19 +435,49 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
       <div style={{ display: 'flex', flex: 1 }}>
         {/* Sidebar */}
         <aside style={{ width: '260px', flexShrink: 0, borderRight: '1px solid var(--border)', padding: '16px 0', overflowY: 'auto', height: 'calc(100vh - 56px)', position: 'sticky', top: '56px' }}>
-          <div style={{ padding: '0 16px 10px', fontSize: '11px', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-            {SPACE_LABELS[space]}
+          <div style={{ padding: '0 16px 10px', fontSize: '11px', fontWeight: '700', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>{SPACE_LABELS[space]}</span>
+            {isAdmin && (
+              <span style={{ fontSize: '10px', fontWeight: '500', color: 'var(--accent)', letterSpacing: '0', textTransform: 'none' }}>
+                drag to reorder
+              </span>
+            )}
           </div>
           <div style={{ padding: '0 6px' }}>
-            {Object.keys(sidebarTree).length === 0
-              ? <div style={{ padding: '8px 16px', fontSize: '13px', color: 'var(--text-muted)' }}>Loading...</div>
-              : renderTree(
-                  Object.values(sidebarTree)
-                    .filter(p => !p.parent || !(p.parent in sidebarTree))
-                    .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title))),
-                  0
-                )
-            }
+            {Object.keys(sidebarTree).length === 0 ? (
+              <div style={{ padding: '8px 16px', fontSize: '13px', color: 'var(--text-muted)' }}>Loading...</div>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragEnd={handleDragEnd}
+                onDragCancel={handleDragCancel}
+              >
+                {renderTree(getRoots(), 0)}
+                <DragOverlay dropAnimation={null}>
+                  {draggedNode ? (
+                    <div style={{
+                      padding: '4px 12px',
+                      background: 'var(--bg)',
+                      border: '1px solid var(--accent)',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      color: 'var(--accent)',
+                      fontWeight: '500',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+                      maxWidth: '220px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {decodeTitle(draggedNode.title)}
+                    </div>
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
+            )}
           </div>
         </aside>
 
