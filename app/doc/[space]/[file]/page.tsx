@@ -247,7 +247,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         </aside>
 
         {/* Main content */}
-        <main style={{ flex: 1, padding: '48px 56px', minWidth: 0, maxWidth: '960px' }}>
+        <main style={{ flex: 1, padding: '48px 56px', minWidth: 0 }}>
           <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '28px', color: 'var(--text)' }}>{decodeTitle(title)}</h1>
           {loading ? (
             <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
