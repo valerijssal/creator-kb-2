@@ -528,7 +528,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
       </header>
 
       <div style={{ display: 'flex', flex: 1 }}>
-        <aside style={{ width: sidebarWidth + 'px', flexShrink: 0, borderRight: '1px solid var(--border)', padding: '20px 0', overflowY: 'auto', height: 'calc(100vh - 56px)', position: 'sticky', top: '56px', background: 'var(--bg)', position: 'relative' }}>
+        <aside style={{ width: sidebarWidth + 'px', flexShrink: 0, borderRight: '1px solid var(--border)', padding: '20px 0', overflowY: 'auto', height: 'calc(100vh - 56px)', position: 'sticky', top: '56px', background: 'var(--bg)' }}>
           <DndContext sensors={sensors} collisionDetection={closestCenter}
             onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
             <div style={{ padding: '0 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
