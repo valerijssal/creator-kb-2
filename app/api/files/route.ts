@@ -33,8 +33,11 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const { path, sha } = await request.json();
-  const success = await deleteFile(path, sha);
+  const { path } = await request.json();
+  // Always fetch latest sha before deleting to avoid stale sha errors
+  const latest = await getFileContent(path);
+  if (!latest) return NextResponse.json({ error: 'File not found' }, { status: 404 });
+  const success = await deleteFile(path, latest.sha);
   if (!success) return NextResponse.json({ error: 'Delete failed' }, { status: 500 });
 
   // Remove from titles.json and tree.json
