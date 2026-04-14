@@ -64,146 +64,75 @@ function decodeTitle(title: string): string {
 
 function ChevronIcon({ expanded }: { expanded: boolean }) {
   return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      style={{
-        transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
-        transition: 'transform 0.15s ease',
-        flexShrink: 0,
-      }}
-    >
-      <path
-        d="M6 4L10 8L6 12"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+      style={{ transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease', flexShrink: 0 }}>
+      <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
 
-/* --- Root drop zone (space header) --- */
-function RootDropZone({ label, isOver }: { label: string; isOver: boolean }) {
+function RootDropZone({ isOver, isDragging }: { isOver: boolean; isDragging: boolean }) {
   const { setNodeRef } = useDroppable({ id: '__ROOT__' });
+  if (!isDragging) return null;
   return (
     <div
       ref={setNodeRef}
       style={{
-        padding: '0 20px 14px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        margin: '0 8px 8px',
+        padding: '10px 16px',
+        border: isOver ? '2px solid var(--accent)' : '2px dashed rgba(59, 130, 246, 0.3)',
+        borderRadius: '8px',
         background: isOver ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-        borderRadius: '6px',
-        transition: 'background 0.15s',
+        color: isOver ? 'var(--accent)' : 'var(--text-muted)',
+        fontSize: '12px',
+        fontWeight: '500',
+        textAlign: 'center',
+        transition: 'all 0.15s',
       }}
     >
-      <span style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', color: isOver ? 'var(--accent)' : 'var(--text-muted)' }}>
-        {isOver ? 'Drop here to move to root' : label}
-      </span>
+      Drop here to move to root level
     </div>
   );
 }
 
 function DraggableTreeItem({
-  node,
-  depth,
-  isAdmin,
-  isCurrent,
-  isParent,
-  isExpanded,
-  hasChildren,
-  isDropTarget,
-  onToggle,
-  onNavigate,
+  node, depth, isAdmin, isCurrent, isParent, isExpanded, hasChildren, isDropTarget, onToggle, onNavigate,
 }: {
-  node: TreeNode;
-  depth: number;
-  isAdmin: boolean;
-  isCurrent: boolean;
-  isParent: boolean;
-  isExpanded: boolean;
-  hasChildren: boolean;
-  isDropTarget: boolean;
-  onToggle: () => void;
-  onNavigate: () => void;
+  node: TreeNode; depth: number; isAdmin: boolean; isCurrent: boolean; isParent: boolean;
+  isExpanded: boolean; hasChildren: boolean; isDropTarget: boolean; onToggle: () => void; onNavigate: () => void;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: node.file,
-    disabled: !isAdmin,
-  });
-
-  const style: React.CSSProperties = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-    opacity: isDragging ? 0.35 : 1,
-  };
-
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: node.file, disabled: !isAdmin });
+  const style: React.CSSProperties = { transform: CSS.Translate.toString(transform), transition, opacity: isDragging ? 0.35 : 1 };
   const cleanTitle = decodeTitle(node.title);
 
   return (
     <div ref={setNodeRef} style={style}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          paddingLeft: `${depth * 20 + 8}px`,
-          paddingRight: '8px',
-          marginBottom: '1px',
-          background: isDropTarget ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-          borderRadius: '6px',
-          transition: 'background 0.15s',
-        }}
-      >
+      <div style={{
+        display: 'flex', alignItems: 'center', paddingLeft: `${depth * 20 + 8}px`, paddingRight: '8px',
+        marginBottom: '1px', background: isDropTarget ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
+        borderRadius: '6px', transition: 'background 0.15s',
+      }}>
         {hasChildren ? (
-          <button
-            onClick={(e) => { e.stopPropagation(); onToggle(); }}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', width: '22px', height: '22px',
-              borderRadius: '4px', flexShrink: 0, padding: 0,
-            }}
+          <button onClick={(e) => { e.stopPropagation(); onToggle(); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', width: '22px', height: '22px', borderRadius: '4px', flexShrink: 0, padding: 0 }}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2, #f0f0f0)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-          >
+            onMouseLeave={e => (e.currentTarget.style.background = 'none')}>
             <ChevronIcon expanded={isExpanded} />
           </button>
         ) : (
           <span style={{ width: '22px', flexShrink: 0 }} />
         )}
-        <button
-          onClick={onNavigate}
-          {...(isAdmin ? { ...attributes, ...listeners } : {})}
+        <button onClick={onNavigate} {...(isAdmin ? { ...attributes, ...listeners } : {})}
           style={{
             background: isCurrent ? 'rgba(59, 130, 246, 0.1)' : isParent ? 'rgba(59, 130, 246, 0.04)' : 'none',
-            border: 'none',
-            borderLeft: isCurrent ? '2px solid var(--accent)' : isParent ? '2px solid rgba(59, 130, 246, 0.25)' : '2px solid transparent',
-            borderRadius: '4px',
-            cursor: isAdmin ? 'grab' : 'pointer',
-            textAlign: 'left' as const,
-            padding: '6px 10px',
-            fontSize: '13px',
-            color: isCurrent ? 'var(--accent)' : 'var(--text)',
-            fontWeight: isCurrent ? '600' : isParent ? '500' : '400',
-            flex: 1,
-            lineHeight: '1.5',
-            transition: 'background 0.1s',
+            border: 'none', borderLeft: isCurrent ? '2px solid var(--accent)' : isParent ? '2px solid rgba(59, 130, 246, 0.25)' : '2px solid transparent',
+            borderRadius: '4px', cursor: isAdmin ? 'grab' : 'pointer', textAlign: 'left' as const,
+            padding: '6px 10px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)',
+            fontWeight: isCurrent ? '600' : isParent ? '500' : '400', flex: 1, lineHeight: '1.5', transition: 'background 0.1s',
           }}
           onMouseEnter={e => { if (!isCurrent && !isParent) e.currentTarget.style.background = 'var(--bg-2, #f5f5f5)'; }}
-          onMouseLeave={e => { if (!isCurrent && !isParent) e.currentTarget.style.background = 'none'; }}
-        >
+          onMouseLeave={e => { if (!isCurrent && !isParent) e.currentTarget.style.background = 'none'; }}>
           {cleanTitle}
         </button>
       </div>
@@ -240,11 +169,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const [newFolderTitle, setNewFolderTitle] = useState('');
   const [creatingFolder, setCreatingFolder] = useState(false);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    })
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   useEffect(() => {
     const match = document.cookie.match(/(^| )kb_level=([^;]+)/);
@@ -258,8 +183,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         let raw = data.content || '';
         const escapedMatch = raw.match(/<pre><code>(&lt;!DOCTYPE[\s\S]*?)<\/code><\/pre>/i);
         if (escapedMatch) {
-          raw = escapedMatch[1]
-            .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+          raw = escapedMatch[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
         }
         setContent(raw);
         setIsStandalonePage(raw.includes('<!DOCTYPE') && raw.includes('<style>'));
@@ -275,10 +199,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         setSidebarTree(tree);
         const expanded = new Set<string>();
         let current = tree[fileName]?.parent;
-        while (current && tree[current]) {
-          expanded.add(current);
-          current = tree[current].parent;
-        }
+        while (current && tree[current]) { expanded.add(current); current = tree[current].parent; }
         if (tree[fileName]?.parent) expanded.add(tree[fileName].parent!);
         setExpandedNodes(expanded);
       });
@@ -293,33 +214,20 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const handleSave = async () => {
     setSaving(true);
     const fullHtml = `<!DOCTYPE html><html><head><title>${title}</title></head><body>${editContent}</body></html>`;
-    const res = await fetch('/api/files', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: getFilePath(space, fileName), content: fullHtml, sha }),
-    });
+    const res = await fetch('/api/files', { method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: getFilePath(space, fileName), content: fullHtml, sha }) });
     if (res.ok) {
       const updated = await fetch(`/api/files?path=${encodeURIComponent(getFilePath(space, fileName))}`).then(r => r.json());
-      setSha(updated.sha);
-      setContent(fullHtml);
-      setEditing(false);
-      setActionMsg('Saved.');
-      setTimeout(() => setActionMsg(''), 3000);
+      setSha(updated.sha); setContent(fullHtml); setEditing(false);
+      setActionMsg('Saved.'); setTimeout(() => setActionMsg(''), 3000);
     }
     setSaving(false);
   };
 
   const handleDelete = async () => {
     const res = await fetch('/api/files', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: getFilePath(space, fileName), sha }) });
-    if (res.ok) {
-      setShowDeleteConfirm(false);
-      setActionMsg('Document deleted successfully.');
-      setTimeout(() => router.push(`/space/${space}`), 1500);
-    } else {
-      setShowDeleteConfirm(false);
-      setActionMsg('Failed to delete document.');
-      setTimeout(() => setActionMsg(''), 3000);
-    }
+    if (res.ok) { setShowDeleteConfirm(false); setActionMsg('Document deleted successfully.'); setTimeout(() => router.push(`/space/${space}`), 1500); }
+    else { setShowDeleteConfirm(false); setActionMsg('Failed to delete document.'); setTimeout(() => setActionMsg(''), 3000); }
   };
 
   const handleMove = async () => {
@@ -331,153 +239,84 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const handleCreateSub = async () => {
     if (!subTitle.trim()) return;
     setCreatingSub(true);
-    const res = await fetch('/api/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: subTitle, space, parentFile: fileName }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setShowCreateSub(false);
-      setSubTitle('');
-      router.push(`/doc/${space}/${encodeURIComponent(data.fileName)}`);
-    }
+    const res = await fetch('/api/create', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: subTitle, space, parentFile: fileName }) });
+    if (res.ok) { const data = await res.json(); setShowCreateSub(false); setSubTitle(''); router.push(`/doc/${space}/${encodeURIComponent(data.fileName)}`); }
     setCreatingSub(false);
   };
 
   const handleCreateFolder = async () => {
     if (!newFolderTitle.trim()) return;
     setCreatingFolder(true);
-    const res = await fetch('/api/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: newFolderTitle, space, parentFile: null }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setShowNewFolder(false);
-      setNewFolderTitle('');
-      router.push(`/doc/${space}/${encodeURIComponent(data.fileName)}`);
-    }
+    const res = await fetch('/api/create', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: newFolderTitle, space, parentFile: null }) });
+    if (res.ok) { const data = await res.json(); setShowNewFolder(false); setNewFolderTitle(''); router.push(`/doc/${space}/${encodeURIComponent(data.fileName)}`); }
     setCreatingFolder(false);
   };
 
   const toggleNode = (nodeFile: string) => {
-    setExpandedNodes(prev => {
-      const next = new Set(prev);
-      if (next.has(nodeFile)) next.delete(nodeFile);
-      else next.add(nodeFile);
-      return next;
-    });
+    setExpandedNodes(prev => { const next = new Set(prev); if (next.has(nodeFile)) next.delete(nodeFile); else next.add(nodeFile); return next; });
   };
 
-  const handleDragStart = (event: DragStartEvent) => {
-    setDragActiveId(event.active.id as string);
-  };
-
-  const handleDragOver = (event: any) => {
-    setDropTargetId(event.over?.id as string || null);
-  };
+  const handleDragStart = (event: DragStartEvent) => { setDragActiveId(event.active.id as string); };
+  const handleDragOver = (event: any) => { setDropTargetId(event.over?.id as string || null); };
+  const handleDragCancel = () => { setDragActiveId(null); setDropTargetId(null); };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setDragActiveId(null);
     setDropTargetId(null);
-
     if (!over || active.id === over.id) return;
 
     const draggedFile = active.id as string;
     const isRootDrop = over.id === '__ROOT__';
-    const targetFile = isRootDrop ? null : over.id as string;
-
+    const newParent = isRootDrop ? null : (over.id as string);
     const currentParent = sidebarTree[draggedFile]?.parent;
-    const newParent = isRootDrop ? null : targetFile;
 
-    // Skip if already at target
     if (currentParent === newParent) return;
 
-    // Circular ref check
     if (newParent) {
       let check: string | null = newParent;
       while (check && sidebarTree[check]) {
-        if (check === draggedFile) {
-          setReorderMsg('Cannot move a folder into its own child.');
-          setTimeout(() => setReorderMsg(''), 3000);
-          return;
-        }
+        if (check === draggedFile) { setReorderMsg('Cannot move a folder into its own child.'); setTimeout(() => setReorderMsg(''), 3000); return; }
         check = sidebarTree[check].parent;
       }
     }
 
-    // Optimistic update
-    setSidebarTree(prev => ({
-      ...prev,
-      [draggedFile]: { ...prev[draggedFile], parent: newParent },
-    }));
-
-    if (newParent) {
-      setExpandedNodes(prev => new Set([...prev, newParent]));
-    }
-
+    setSidebarTree(prev => ({ ...prev, [draggedFile]: { ...prev[draggedFile], parent: newParent } }));
+    if (newParent) setExpandedNodes(prev => new Set([...prev, newParent]));
     setReorderMsg('Moving...');
 
-    const res = await fetch('/api/tree/reorder', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ space, file: draggedFile, newParent }),
-    });
-
-    if (res.ok) {
-      setReorderMsg('Moved.');
-      setTimeout(() => setReorderMsg(''), 2000);
-    } else {
-      setSidebarTree(prev => ({
-        ...prev,
-        [draggedFile]: { ...prev[draggedFile], parent: currentParent ?? null },
-      }));
+    const res = await fetch('/api/tree/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ space, file: draggedFile, newParent }) });
+    if (res.ok) { setReorderMsg('Moved.'); setTimeout(() => setReorderMsg(''), 2000); }
+    else {
+      setSidebarTree(prev => ({ ...prev, [draggedFile]: { ...prev[draggedFile], parent: currentParent ?? null } }));
       const err = await res.json().catch(() => ({ error: 'Move failed' }));
-      setReorderMsg(err.error || 'Move failed.');
-      setTimeout(() => setReorderMsg(''), 3000);
+      setReorderMsg(err.error || 'Move failed.'); setTimeout(() => setReorderMsg(''), 3000);
     }
-  };
-
-  const handleDragCancel = () => {
-    setDragActiveId(null);
-    setDropTargetId(null);
   };
 
   const renderTree = (nodes: TreeNode[], depth: number): React.ReactNode => {
-    return nodes
-      .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)))
-      .map(node => {
-        const children = Object.values(sidebarTree).filter(n => n.parent === node.file);
-        const isExpanded = expandedNodes.has(node.file);
-        const isCurrent = node.file === fileName;
-        const isParentNode = node.file === sidebarTree[fileName]?.parent;
-        const isTarget = dropTargetId === node.file && dragActiveId !== node.file;
-
-        return (
-          <div key={node.file}>
-            <DraggableTreeItem
-              node={node}
-              depth={depth}
-              isAdmin={isAdmin}
-              isCurrent={isCurrent}
-              isParent={isParentNode}
-              isExpanded={isExpanded}
-              hasChildren={children.length > 0}
-              isDropTarget={isTarget}
-              onToggle={() => toggleNode(node.file)}
-              onNavigate={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)}
-            />
-            {isExpanded && children.length > 0 && (
-              <div style={{ marginLeft: `${depth * 20 + 19}px`, borderLeft: '1px solid rgba(0,0,0,0.06)', paddingLeft: '0' }}>
-                {renderTree(children, depth + 1)}
-              </div>
-            )}
-          </div>
-        );
-      });
+    return nodes.sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title))).map(node => {
+      const children = Object.values(sidebarTree).filter(n => n.parent === node.file);
+      const isExpanded = expandedNodes.has(node.file);
+      const isCurrent = node.file === fileName;
+      const isParentNode = node.file === sidebarTree[fileName]?.parent;
+      const isTarget = dropTargetId === node.file && dragActiveId !== node.file;
+      return (
+        <div key={node.file}>
+          <DraggableTreeItem node={node} depth={depth} isAdmin={isAdmin} isCurrent={isCurrent} isParent={isParentNode}
+            isExpanded={isExpanded} hasChildren={children.length > 0} isDropTarget={isTarget}
+            onToggle={() => toggleNode(node.file)} onNavigate={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)} />
+          {isExpanded && children.length > 0 && (
+            <div style={{ marginLeft: `${depth * 20 + 19}px`, borderLeft: '1px solid rgba(0,0,0,0.06)' }}>
+              {renderTree(children, depth + 1)}
+            </div>
+          )}
+        </div>
+      );
+    });
   };
 
   const draggedNode = dragActiveId ? sidebarTree[dragActiveId] : null;
@@ -514,29 +353,18 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
 
       <div style={{ display: 'flex', flex: 1 }}>
         <aside style={{ width: '280px', flexShrink: 0, borderRight: '1px solid var(--border)', padding: '20px 0', overflowY: 'auto', height: 'calc(100vh - 56px)', position: 'sticky', top: '56px', background: 'var(--bg)' }}>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-            onDragCancel={handleDragCancel}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px 14px' }}>
-              <RootDropZone label={SPACE_LABELS[space]} isOver={dropTargetId === '__ROOT__' && !!dragActiveId} />
+          <DndContext sensors={sensors} collisionDetection={closestCenter}
+            onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
+            <div style={{ padding: '0 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+                {SPACE_LABELS[space]}
+              </span>
               {isAdmin && (
-                <button
-                  onClick={() => setShowNewFolder(true)}
-                  title="New folder"
-                  style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'var(--text-muted)', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', width: '24px', height: '24px',
-                    borderRadius: '4px', padding: 0, flexShrink: 0,
-                  }}
+                <button onClick={() => setShowNewFolder(true)} title="New folder"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '4px', padding: 0, flexShrink: 0 }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2, #f0f0f0)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                >
+                  onMouseLeave={e => (e.currentTarget.style.background = 'none')}>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M2 4.5C2 3.67 2.67 3 3.5 3H6.29a1 1 0 0 1 .7.29L8 4.3h4.5c.83 0 1.5.67 1.5 1.5V11.5c0 .83-.67 1.5-1.5 1.5h-9A1.5 1.5 0 0 1 2 11.5V4.5z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" fill="none"/>
                     <path d="M8 7v4M6 9h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
@@ -544,6 +372,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
                 </button>
               )}
             </div>
+            <RootDropZone isOver={dropTargetId === '__ROOT__' && !!dragActiveId} isDragging={!!dragActiveId} />
             <div style={{ padding: '0 8px' }}>
               {Object.keys(sidebarTree).length === 0 ? (
                 <div style={{ padding: '8px 20px', fontSize: '13px', color: 'var(--text-muted)' }}>Loading...</div>
@@ -552,20 +381,9 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
                   {renderTree(getRoots(), 0)}
                   <DragOverlay dropAnimation={null}>
                     {draggedNode ? (
-                      <div style={{
-                        padding: '6px 14px',
-                        background: 'var(--bg)',
-                        border: '1px solid var(--accent)',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        color: 'var(--accent)',
-                        fontWeight: '500',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                        maxWidth: '240px',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}>
+                      <div style={{ padding: '6px 14px', background: 'var(--bg)', border: '1px solid var(--accent)', borderRadius: '8px',
+                        fontSize: '13px', color: 'var(--accent)', fontWeight: '500', boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                        maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {decodeTitle(draggedNode.title)}
                       </div>
                     ) : null}
@@ -595,15 +413,9 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
           <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '28px', width: '400px', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
             <h3 style={{ marginBottom: '8px', fontSize: '15px', fontWeight: '600' }}>New folder</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '16px' }}>Creates a page at the root of {SPACE_LABELS[space]}. Drag other pages into it to organize.</p>
-            <input
-              type="text"
-              placeholder="Folder name..."
-              value={newFolderTitle}
-              onChange={e => setNewFolderTitle(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleCreateFolder()}
-              autoFocus
-              style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontSize: '13px', marginBottom: '16px', outline: 'none' }}
-            />
+            <input type="text" placeholder="Folder name..." value={newFolderTitle} onChange={e => setNewFolderTitle(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleCreateFolder()} autoFocus
+              style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontSize: '13px', marginBottom: '16px', outline: 'none' }} />
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={() => { setShowNewFolder(false); setNewFolderTitle(''); }} style={{ padding: '7px 14px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
               <button onClick={handleCreateFolder} disabled={!newFolderTitle.trim() || creatingFolder} style={{ padding: '7px 14px', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: '500', cursor: newFolderTitle.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }}>{creatingFolder ? 'Creating...' : 'Create'}</button>
@@ -633,15 +445,9 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
           <div style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '28px', width: '400px', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
             <h3 style={{ marginBottom: '8px', fontSize: '15px', fontWeight: '600' }}>Create sub-page</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '16px' }}>Under: {decodeTitle(title)}</p>
-            <input
-              type="text"
-              placeholder="Page title..."
-              value={subTitle}
-              onChange={e => setSubTitle(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleCreateSub()}
-              autoFocus
-              style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontSize: '13px', marginBottom: '16px', outline: 'none' }}
-            />
+            <input type="text" placeholder="Page title..." value={subTitle} onChange={e => setSubTitle(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleCreateSub()} autoFocus
+              style={{ width: '100%', padding: '8px 12px', background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text)', fontSize: '13px', marginBottom: '16px', outline: 'none' }} />
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button onClick={() => { setShowCreateSub(false); setSubTitle(''); }} style={{ padding: '7px 14px', background: 'none', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '13px' }}>Cancel</button>
               <button onClick={handleCreateSub} disabled={!subTitle.trim() || creatingSub} style={{ padding: '7px 14px', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', fontWeight: '500', cursor: subTitle.trim() ? 'pointer' : 'not-allowed', fontSize: '13px' }}>{creatingSub ? 'Creating...' : 'Create'}</button>
