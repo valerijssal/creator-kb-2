@@ -73,8 +73,8 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
     else if (docsMatch) embedUrl = 'https://docs.google.com/document/d/' + docsMatch[1] + '/preview';
     else if (slidesMatch) embedUrl = 'https://docs.google.com/presentation/d/' + slidesMatch[1] + '/embed';
     else { alert('Please paste a valid Google Sheets, Docs, or Slides URL.'); return; }
-    const iframe = '<div class="google-embed"><iframe src="' + embedUrl + '" width="100%" height="500" frameborder="0" allowfullscreen></iframe></div>';
-    editor.chain().focus().insertContent(iframe).run();
+    const placeholder = '<p class="google-embed-placeholder" data-embed-url="' + embedUrl + '">[Google Embed: ' + embedUrl + ']</p>';
+    editor.chain().focus().insertContent(placeholder).run();
   };
 
   if (!editor) return null;

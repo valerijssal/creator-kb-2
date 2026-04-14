@@ -160,6 +160,13 @@ function DraggableTreeItem({
   );
 }
 
+function renderGoogleEmbeds(html: string): string {
+  return html.replace(
+    /<p[^>]*class="google-embed-placeholder"[^>]*data-embed-url="([^"]+)"[^>]*>.*?<\/p>/g,
+    '<div class="google-embed"><iframe src="$1" width="100%" height="500" frameborder="0" allowfullscreen style="border:none;min-height:500px;border-radius:8px;"></iframe></div>'
+  );
+}
+
 export default function DocPage({ params }: { params: Promise<{ space: string; file: string }> }) {
   const { space, file } = use(params);
   const router = useRouter();
@@ -570,7 +577,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
           ) : isStandalonePage ? (
             <iframe srcDoc={content} style={{ width: '100%', height: '80vh', border: 'none', borderRadius: '8px' }} />
           ) : (
-            <div className="doc-content" dangerouslySetInnerHTML={{ __html: bodyContent }} />
+            <div className="doc-content" dangerouslySetInnerHTML={{ __html: renderGoogleEmbeds(bodyContent) }} />
           )}
         </main>
       </div>
