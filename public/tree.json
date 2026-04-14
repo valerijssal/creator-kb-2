@@ -3949,11 +3949,6 @@
       "title": "Creator Services : Dan &amp; Riya - October 2024",
       "parent": "13183189250.html"
     },
-    "13202685953.html": {
-      "file": "13202685953.html",
-      "title": "Creator Services : (YT Report) Kikaaaa - October 2024",
-      "parent": null
-    },
     "13217529858.html": {
       "file": "13217529858.html",
       "title": "Creator Services : Riss &amp; Quan - Snapchat October 2024",
@@ -5407,7 +5402,7 @@
     "Asana-Automation-Rules---Employee-Change-Management-Guide_14055932025.html": {
       "file": "Asana-Automation-Rules---Employee-Change-Management-Guide_14055932025.html",
       "title": "Creator Services : Asana Automation Rules - Employee Change Management Guide",
-      "parent": "Coordinator-Space_13240926294.html"
+      "parent": null
     },
     "Aslinaz-Aykaya_14800650311.html": {
       "file": "Aslinaz-Aykaya_14800650311.html",
@@ -5453,11 +5448,6 @@
       "file": "Best-Friends-For-Frosting_13033963531.html",
       "title": "Creator Services : Best Friends For Frosting",
       "parent": "Terminated-projects---FB_12689866928.html"
-    },
-    "Best-practices-relatable-to-CS-SMM_13177290841.html": {
-      "file": "Best-practices-relatable-to-CS-SMM_13177290841.html",
-      "title": "Creator Services : Best practices relatable to CS SMM",
-      "parent": "Coordinator-Space_13240926294.html"
     },
     "Bi-Weekly-Recap-07.07---21.07_14137360396.html": {
       "file": "Bi-Weekly-Recap-07.07---21.07_14137360396.html",
@@ -6138,11 +6128,6 @@
       "file": "Convention-for-creating-licensor-tags-in-SoulCube-deal_14077198383.html",
       "title": "Creator Services : Convention for creating licensor tags in SoulCube deal",
       "parent": "Licensing---SoulCube---Bright-Peak-Licensing_13993050114.html"
-    },
-    "Coordinator-Space_13240926294.html": {
-      "file": "Coordinator-Space_13240926294.html",
-      "title": "Creator Services : Coordinator Space",
-      "parent": null
     },
     "Copy-of-Black-Girl-Tries---Snapchat-September-2024_13217726465.html": {
       "file": "Copy-of-Black-Girl-Tries---Snapchat-September-2024_13217726465.html",
@@ -7837,7 +7822,7 @@
     "Key-Information-to-cover-on-Onboardings_13257081726.html": {
       "file": "Key-Information-to-cover-on-Onboardings_13257081726.html",
       "title": "Creator Services : Key Information to cover on Onboardings",
-      "parent": "Coordinator-Space_13240926294.html"
+      "parent": null
     },
     "Kidoodle---Distribution_14136475773.html": {
       "file": "Kidoodle---Distribution_14136475773.html",
@@ -7847,7 +7832,7 @@
     "Kikaaaa---YouTube_13202358280.html": {
       "file": "Kikaaaa---YouTube_13202358280.html",
       "title": "Creator Services : Kikaaaa - YouTube",
-      "parent": "13202685953.html"
+      "parent": null
     },
     "Klem-Family_12571836577.html": {
       "file": "Klem-Family_12571836577.html",
@@ -10202,7 +10187,7 @@
     "Vacation-Request-Workflow_14269219093.html": {
       "file": "Vacation-Request-Workflow_14269219093.html",
       "title": "Creator Services : Vacation Request Workflow",
-      "parent": "Coordinator-Space_13240926294.html"
+      "parent": null
     },
     "Valeria%27s-weekly-recaps_13260095751.html": {
       "file": "Valeria%27s-weekly-recaps_13260095751.html",
@@ -11334,9 +11319,34 @@
       "title": "CSS (Creator Services)",
       "parent": "Guidelines-for-localization-and-publication-of-Hamster-Academy-compilations_13184467027.html"
     },
+    "lead-s-recaps_1776173749360.html": {
+      "file": "lead-s-recaps_1776173749360.html",
+      "title": "Lead's recaps",
+      "parent": null
+    },
     "new-operation-instructions_1776151457957.html": {
       "file": "new-operation-instructions_1776151457957.html",
       "title": "New Operation Instructions",
+      "parent": null
+    },
+    "recaps_1776173739178.html": {
+      "file": "recaps_1776173739178.html",
+      "title": "Recaps",
+      "parent": null
+    },
+    "test-folder_1776172643839.html": {
+      "file": "test-folder_1776172643839.html",
+      "title": "test folder",
+      "parent": null
+    },
+    "test1_1776170918091.html": {
+      "file": "test1_1776170918091.html",
+      "title": "test1",
+      "parent": null
+    },
+    "test_1776168182764.html": {
+      "file": "test_1776168182764.html",
+      "title": "Test",
       "parent": null
     },
     "week-02.11---08.11_13230964777.html": {
