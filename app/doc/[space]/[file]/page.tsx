@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, use, useMemo } from 'react';
+import React, { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
@@ -66,6 +66,8 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const [actionMsg, setActionMsg] = useState('');
   const [isStandalonePage, setIsStandalonePage] = useState(false);
   const [sidebarTree, setSidebarTree] = useState<Record<string, TreeNode>>({});
+  const [childMap, setChildMap] = useState<Record<string, TreeNode[]>>({});
+  const [rootNodes, setRootNodes] = useState<TreeNode[]>([]);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -90,6 +92,21 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
       .then((tree: Record<string, TreeNode>) => {
         if (tree[fileName]) setTitle(tree[fileName].title);
         setSidebarTree(tree);
+        // Build childMap
+        const cm: Record<string, TreeNode[]> = {};
+        Object.values(tree).forEach(node => {
+          if (node.parent && node.parent in tree) {
+            if (!cm[node.parent]) cm[node.parent] = [];
+            cm[node.parent].push(node);
+          }
+        });
+        setChildMap(cm);
+        // Build rootNodes
+        const roots = Object.values(tree)
+          .filter(p => !p.parent || !(p.parent in tree))
+          .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)));
+        setRootNodes(roots);
+        // Auto-expand ancestors
         const expanded = new Set<string>();
         let current = tree[fileName]?.parent;
         while (current && tree[current]) {
@@ -139,19 +156,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     });
   };
 
-  const { childMap, rootNodes } = useMemo(() => {
-    const childMap: Record<string, TreeNode[]> = {};
-    Object.values(sidebarTree).forEach(node => {
-      if (node.parent && node.parent in sidebarTree) {
-        if (!childMap[node.parent]) childMap[node.parent] = [];
-        childMap[node.parent].push(node);
-      }
-    });
-    const rootNodes = Object.values(sidebarTree)
-      .filter(p => !p.parent || !(p.parent in sidebarTree))
-      .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)));
-    return { childMap, rootNodes };
-  }, [sidebarTree]);
+
 
   const renderTree = (nodes: TreeNode[], depth: number): React.ReactNode => {
     return nodes
