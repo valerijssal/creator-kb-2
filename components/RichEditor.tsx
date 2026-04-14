@@ -62,6 +62,21 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
     setUploading(false);
   };
 
+  const handleGoogleEmbed = () => {
+    const url = prompt('Paste a Google Sheets or Docs URL:');
+    if (!url || !editor) return;
+    let embedUrl = '';
+    const sheetsMatch = url.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+    const docsMatch = url.match(/docs\.google\.com\/document\/d\/([a-zA-Z0-9_-]+)/);
+    const slidesMatch = url.match(/docs\.google\.com\/presentation\/d\/([a-zA-Z0-9_-]+)/);
+    if (sheetsMatch) embedUrl = 'https://docs.google.com/spreadsheets/d/' + sheetsMatch[1] + '/preview';
+    else if (docsMatch) embedUrl = 'https://docs.google.com/document/d/' + docsMatch[1] + '/preview';
+    else if (slidesMatch) embedUrl = 'https://docs.google.com/presentation/d/' + slidesMatch[1] + '/embed';
+    else { alert('Please paste a valid Google Sheets, Docs, or Slides URL.'); return; }
+    const iframe = '<div class="google-embed"><iframe src="' + embedUrl + '" width="100%" height="500" frameborder="0" allowfullscreen></iframe></div>';
+    editor.chain().focus().insertContent(iframe).run();
+  };
+
   if (!editor) return null;
 
   const btn = (action: () => void, label: string, active?: boolean) => (
@@ -118,6 +133,9 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
         </button>
         <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
           onChange={e => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+        <button onClick={handleGoogleEmbed} style={{ padding: '4px 10px', background: 'none', border: '1px solid var(--border)', borderRadius: '4px', color: 'var(--text-muted)', fontSize: '12px', fontWeight: '500', cursor: 'pointer' }}>
+          🔗 Google Embed
+        </button>
         />
         {divider()}
         {btn(() => editor.chain().focus().undo().run(), '↩')}

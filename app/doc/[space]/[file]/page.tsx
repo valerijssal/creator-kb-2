@@ -673,6 +673,8 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         .doc-content .expand-content { padding: 12px 16px; }
         .doc-content .task-list { list-style: none; margin-left: 0; padding-left: 0; }
         .doc-content .task-list li { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+        .doc-content .google-embed { margin: 16px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+        .doc-content .google-embed iframe { display: block; border: none; min-height: 500px; }
         .doc-content #breadcrumb-section, .doc-content #title-heading, .doc-content .page-metadata, .doc-content .pageSection { display: none; }
         .doc-content .aui-nav, .doc-content #footer, .doc-content .page-metadata-modification-info { display: none; }
       `}</style>
