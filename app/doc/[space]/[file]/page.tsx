@@ -58,7 +58,14 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     fetch(`/api/files?path=${encodeURIComponent(getFilePath(space, fileName))}`)
       .then(r => r.json())
       .then(data => {
-        const raw = data.content || '';
+        let raw = data.content || '';
+        // Detect escaped HTML stored inside <pre><code> blocks
+        const escapedMatch = raw.match(/<pre><code>(&lt;!DOCTYPE[\s\S]*?)<\/code><\/pre>/i);
+        if (escapedMatch) {
+          const unescaped = escapedMatch[1]
+            .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+          raw = unescaped;
+        }
         setContent(raw);
         setIsStandalonePage(raw.includes('<!DOCTYPE') && raw.includes('<style>'));
         setSha(data.sha || '');
