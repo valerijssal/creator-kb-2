@@ -318,6 +318,19 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     else { setReorderMsg('Failed to update access.'); setTimeout(() => setReorderMsg(''), 3000); }
   };
 
+  const handleAccessChange = async (level: string) => {
+    setShowAccessMenu(false);
+    setDocAccessLevel(level);
+    setReorderMsg('Updating access...');
+    const res = await fetch('/api/access', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ docs: { [fileName]: level } }),
+    });
+    if (res.ok) { setReorderMsg('Access updated.'); setTimeout(() => setReorderMsg(''), 2000); }
+    else { setReorderMsg('Failed to update access.'); setTimeout(() => setReorderMsg(''), 3000); }
+  };
+
   const handleDragStart = (event: DragStartEvent) => { setDragActiveId(event.active.id as string); };
   const handleDragOver = (event: any) => { setDropTargetId(event.over?.id as string || null); };
   const handleDragCancel = () => { setDragActiveId(null); setDropTargetId(null); };
@@ -492,6 +505,21 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
               <button onClick={() => setEditing(true)} style={{ padding: '5px 14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>Edit</button>
               <button onClick={() => setShowMoveModal(true)} style={{ padding: '5px 12px', background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>Move</button>
               <button onClick={() => setShowDeleteConfirm(true)} style={{ padding: "5px 12px", background: "none", color: "var(--danger)", border: "1px solid var(--danger)", borderRadius: "6px", fontSize: "13px", cursor: "pointer" }}>Delete</button>
+              {isAdmin && (
+                <div style={{ position: 'relative' }}>
+                  <button onClick={() => setShowAccessMenu(!showAccessMenu)} style={{ padding: '5px 12px', background: 'none', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 6V4.5C5 3.4 5.9 2.5 7 2.5s2 .9 2 2V6M3.5 6h7c.6 0 1 .4 1 1v4.5c0 .6-.4 1-1 1h-7c-.6 0-1-.4-1-1V7c0-.6.4-1 1-1z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    {docAccessLevel}
+                  </button>
+                  {showAccessMenu && (
+                    <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 50, minWidth: '140px', padding: '4px 0' }}>
+                      {['open', 'team', 'limited', 'restricted', 'executive'].map(level => (
+                        <button key={level} onClick={() => handleAccessChange(level)} style={{ display: 'block', width: '100%', padding: '8px 14px', background: level === docAccessLevel ? 'var(--bg-2, #f5f5f5)' : 'none', border: 'none', textAlign: 'left' as const, fontSize: '13px', cursor: 'pointer', color: level === docAccessLevel ? 'var(--accent)' : 'var(--text)', fontWeight: level === docAccessLevel ? '600' : '400' }}>{level}</button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
                           </>
           ) : (
             <>
