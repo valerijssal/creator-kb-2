@@ -198,6 +198,10 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const [docAccessLevel, setDocAccessLevel] = useState<string>('open');
   const [showAccessMenu, setShowAccessMenu] = useState(false);
   const [orderMap, setOrderMap] = useState<OrderMap>({});
+  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(280);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
@@ -527,7 +531,28 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
       </header>
 
       <div style={{ display: 'flex', flex: 1 }}>
-        <aside style={{ width: '280px', flexShrink: 0, borderRight: '1px solid var(--border)', padding: '20px 0', overflowY: 'auto', height: 'calc(100vh - 56px)', position: 'sticky', top: '56px', background: 'var(--bg)' }}>
+        {/* Sidebar toggle */}
+        <button
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          style={{
+            position: 'fixed', left: sidebarCollapsed ? '0px' : (sidebarWidth - 1) + 'px',
+            top: '50%', transform: 'translateY(-50%)',
+            zIndex: 20, width: '20px', height: '48px',
+            background: 'var(--bg)', border: '1px solid var(--border)',
+            borderLeft: sidebarCollapsed ? '1px solid var(--border)' : 'none',
+            borderRadius: sidebarCollapsed ? '0 6px 6px 0' : '0 6px 6px 0',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--text-muted)', fontSize: '12px', padding: 0,
+            transition: 'left 0.2s ease',
+            boxShadow: '2px 0 4px rgba(0,0,0,0.06)',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-2, #f0f0f0)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg)')}
+          title={sidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+        >
+          {sidebarCollapsed ? '›' : '‹'}
+        </button>
+        <aside style={{ width: sidebarCollapsed ? '0px' : sidebarWidth + 'px', flexShrink: 0, borderRight: sidebarCollapsed ? 'none' : '1px solid var(--border)', padding: sidebarCollapsed ? '0' : '20px 0', overflowY: 'auto', overflowX: 'hidden', height: 'calc(100vh - 56px)', position: 'sticky', top: '56px', background: 'var(--bg)', transition: 'width 0.2s ease' }}>
           <DndContext sensors={sensors} collisionDetection={closestCenter}
             onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd} onDragCancel={handleDragCancel}>
             <div style={{ padding: '0 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
