@@ -125,7 +125,13 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
 
   // Build tree structure for sidebar
   const rootNodes = Object.values(sidebarTree).filter(p => !p.parent || !sidebarTree[p.parent]);
-  const getChildren = (file: string) => Object.values(sidebarTree).filter(p => p.parent === file);
+  const childMap: Record<string, {file: string; title: string; parent: string | null}[]> = {};
+  Object.values(sidebarTree).forEach(node => {
+    if (node.parent) {
+      if (!childMap[node.parent]) childMap[node.parent] = [];
+      childMap[node.parent].push(node);
+    }
+  });
 
   const toggleNode = (file: string) => {
     setExpandedNodes(prev => {
@@ -137,30 +143,37 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   };
 
   const renderTree = (nodes: {file: string; title: string; parent: string | null}[], depth: number): React.ReactNode => {
-    return nodes.map(node => {
-      const children = getChildren(node.file);
-      const isExpanded = expandedNodes.has(node.file);
-      const isCurrent = node.file === fileName;
-      return (
-        <div key={node.file}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', paddingLeft: `${depth * 14}px` }}>
-            {children.length > 0 && (
-              <button onClick={() => toggleNode(node.file)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '10px', padding: '0 2px', flexShrink: 0 }}>
+    return nodes
+      .sort((a, b) => a.title.localeCompare(b.title))
+      .map(node => {
+        const children = childMap[node.file] || [];
+        const isExpanded = expandedNodes.has(node.file);
+        const isCurrent = node.file === fileName;
+        const cleanTitle = node.title.replace(/^[^:]+:\s*/, '');
+        return (
+          <div key={node.file}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', paddingLeft: `${depth * 12}px` }}>
+              <button
+                onClick={() => toggleNode(node.file)}
+                style={{ background: 'none', border: 'none', cursor: children.length > 0 ? 'pointer' : 'default', color: 'var(--text-muted)', fontSize: '10px', padding: '6px 4px 0', flexShrink: 0, width: '16px', opacity: children.length > 0 ? 1 : 0 }}
+              >
                 {isExpanded ? '▾' : '▸'}
               </button>
+              <button
+                onClick={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)}
+                style={{ background: isCurrent ? 'var(--accent-light)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', borderRadius: '4px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)', fontWeight: isCurrent ? '600' : '400', flex: 1, lineHeight: '1.4' }}
+              >
+                {cleanTitle}
+              </button>
+            </div>
+            {isExpanded && children.length > 0 && (
+              <div style={{ borderLeft: '1px solid var(--border)', marginLeft: `${depth * 12 + 8}px` }}>
+                {renderTree(children, depth + 1)}
+              </div>
             )}
-            {children.length === 0 && <span style={{ width: '14px', flexShrink: 0 }} />}
-            <button
-              onClick={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)}
-              style={{ background: isCurrent ? 'var(--accent-light)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', borderRadius: '4px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)', fontWeight: isCurrent ? '600' : '400', width: '100%', lineHeight: '1.4' }}
-            >
-              {node.title.replace(/^[^:]+:\s*/,'')}
-            </button>
           </div>
-          {isExpanded && children.length > 0 && renderTree(children, depth + 1)}
-        </div>
-      );
-    });
+        );
+      });
   };
 
   return (
