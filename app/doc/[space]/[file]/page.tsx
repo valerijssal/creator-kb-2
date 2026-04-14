@@ -162,7 +162,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
     return nodes
       .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title)))
       .map(node => {
-        const children = childMap[node.file] || [];
+        const children = Object.values(sidebarTree).filter(n => n.parent === node.file);
         const isExpanded = expandedNodes.has(node.file);
         const isCurrent = node.file === fileName;
         const cleanTitle = decodeTitle(node.title);
@@ -231,9 +231,14 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
             {SPACE_LABELS[space]}
           </div>
           <div style={{ padding: '0 6px' }}>
-            {rootNodes.length > 0
-              ? renderTree(rootNodes, 0)
-              : <div style={{ padding: '8px 16px', fontSize: '13px', color: 'var(--text-muted)' }}>Loading...</div>
+            {Object.keys(sidebarTree).length === 0
+              ? <div style={{ padding: '8px 16px', fontSize: '13px', color: 'var(--text-muted)' }}>Loading...</div>
+              : renderTree(
+                  Object.values(sidebarTree)
+                    .filter(p => !p.parent || !(p.parent in sidebarTree))
+                    .sort((a, b) => decodeTitle(a.title).localeCompare(decodeTitle(b.title))),
+                  0
+                )
             }
           </div>
         </aside>
