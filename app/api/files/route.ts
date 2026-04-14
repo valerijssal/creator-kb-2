@@ -37,29 +37,22 @@ export async function DELETE(request: NextRequest) {
   const success = await deleteFile(path, sha);
   if (!success) return NextResponse.json({ error: 'Delete failed' }, { status: 500 });
 
-  // Remove from titles.json
+  // Remove from titles.json and tree.json
   const fileName = path.split('/').pop() ?? '';
   try {
-    const titlesData = await octokit.repos.getContent({ owner, repo: appRepo, path: 'public/titles.json' });
-    if ('content' in titlesData.data) {
-      const titles = JSON.parse(Buffer.from(titlesData.data.content, 'base64').toString('utf-8'));
+    const titlesFile = await getFileContent('public/titles.json');
+    if (titlesFile) {
+      const titles = JSON.parse(titlesFile.content);
       if (titles[fileName]) {
         delete titles[fileName];
-        await octokit.repos.createOrUpdateFileContents({
-          owner, repo: appRepo, path: 'public/titles.json',
-          message: `Remove ${fileName} from titles`,
-          content: Buffer.from(JSON.stringify(titles, null, 2)).toString('base64'),
-          sha: titlesData.data.sha,
-        });
+        await updateFileContent('public/titles.json', JSON.stringify(titles, null, 2), titlesFile.sha);
       }
     }
   } catch {}
-
-  // Remove from tree.json
   try {
-    const treeData = await octokit.repos.getContent({ owner, repo: appRepo, path: 'public/tree.json' });
-    if ('content' in treeData.data) {
-      const tree = JSON.parse(Buffer.from(treeData.data.content, 'base64').toString('utf-8'));
+    const treeFile = await getFileContent('public/tree.json');
+    if (treeFile) {
+      const tree = JSON.parse(treeFile.content);
       let changed = false;
       for (const space of Object.keys(tree)) {
         if (tree[space][fileName]) {
@@ -67,14 +60,7 @@ export async function DELETE(request: NextRequest) {
           changed = true;
         }
       }
-      if (changed) {
-        await octokit.repos.createOrUpdateFileContents({
-          owner, repo: appRepo, path: 'public/tree.json',
-          message: `Remove ${fileName} from tree`,
-          content: Buffer.from(JSON.stringify(tree, null, 2)).toString('base64'),
-          sha: treeData.data.sha,
-        });
-      }
+      if (changed) await updateFileContent('public/tree.json', JSON.stringify(tree, null, 2), treeFile.sha);
     }
   } catch {}
 
