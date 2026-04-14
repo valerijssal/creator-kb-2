@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSpaceFiles, getFileContent, updateFileContent, deleteFile, moveFile, SPACES } from '@/lib/github';
+import { getSpaceFiles, getFileContent, updateFileContent, deleteFile, moveFile, getAppFileContent, updateAppFileContent, SPACES } from '@/lib/github';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -40,17 +40,17 @@ export async function DELETE(request: NextRequest) {
   // Remove from titles.json and tree.json
   const fileName = path.split('/').pop() ?? '';
   try {
-    const titlesFile = await getFileContent('public/titles.json');
+    const titlesFile = await getAppFileContent('public/titles.json');
     if (titlesFile) {
       const titles = JSON.parse(titlesFile.content);
       if (titles[fileName]) {
         delete titles[fileName];
-        await updateFileContent('public/titles.json', JSON.stringify(titles, null, 2), titlesFile.sha, `Remove ${fileName} from titles`);
+        await updateAppFileContent('public/titles.json', JSON.stringify(titles, null, 2), titlesFile.sha, `Remove ${fileName} from titles`);
       }
     }
   } catch {}
   try {
-    const treeFile = await getFileContent('public/tree.json');
+    const treeFile = await getAppFileContent('public/tree.json');
     if (treeFile) {
       const tree = JSON.parse(treeFile.content);
       let changed = false;
@@ -60,7 +60,7 @@ export async function DELETE(request: NextRequest) {
           changed = true;
         }
       }
-      if (changed) await updateFileContent('public/tree.json', JSON.stringify(tree, null, 2), treeFile.sha, `Remove ${fileName} from tree`);
+      if (changed) await updateAppFileContent('public/tree.json', JSON.stringify(tree, null, 2), treeFile.sha, `Remove ${fileName} from tree`);
     }
   } catch {}
 

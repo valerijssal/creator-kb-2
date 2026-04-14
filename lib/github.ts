@@ -115,6 +115,29 @@ export async function moveFile(oldPath: string, newPath: string, sha: string): P
   }
 }
 
+export async function getAppFileContent(path: string): Promise<{ content: string; sha: string } | null> {
+  const appRepo = process.env.GITHUB_APP_REPO!;
+  try {
+    const { data } = await octokit.repos.getContent({ owner, repo: appRepo, path });
+    if ('content' in data) {
+      return { content: Buffer.from(data.content, 'base64').toString('utf-8'), sha: data.sha };
+    }
+    return null;
+  } catch { return null; }
+}
+
+export async function updateAppFileContent(path: string, content: string, sha: string, message: string): Promise<boolean> {
+  const appRepo = process.env.GITHUB_APP_REPO!;
+  try {
+    await octokit.repos.createOrUpdateFileContents({
+      owner, repo: appRepo, path, message,
+      content: Buffer.from(content).toString('base64'),
+      sha,
+    });
+    return true;
+  } catch { return false; }
+}
+
 export function fileNameToTitle(fileName: string): string {
   return fileName
     .replace(/\.html$/, '')
