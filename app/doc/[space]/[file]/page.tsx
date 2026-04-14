@@ -162,8 +162,8 @@ function DraggableTreeItem({
 
 function renderGoogleEmbeds(html: string): string {
   return html.replace(
-    /<p[^>]*class="google-embed-placeholder"[^>]*data-embed-url="([^"]+)"[^>]*>.*?<\/p>/g,
-    '<div class="google-embed"><iframe src="$1" width="100%" height="500" frameborder="0" allowfullscreen style="border:none;min-height:500px;border-radius:8px;"></iframe></div>'
+    /\[Google Embed:\s*(https:\/\/docs\.google\.com\/[^\]]+)\]/g,
+    '<div class="google-embed" style="margin:16px 0;border-radius:8px;overflow:hidden;border:1px solid var(--border)"><iframe src="$1" width="100%" height="500" frameborder="0" allowfullscreen style="border:none;display:block;min-height:500px;"></iframe></div>'
   );
 }
 
