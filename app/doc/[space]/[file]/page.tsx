@@ -190,8 +190,6 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const [creatingFolder, setCreatingFolder] = useState(false);
   const [docAccessLevel, setDocAccessLevel] = useState<string>('open');
   const [showAccessMenu, setShowAccessMenu] = useState(false);
-  const [docAccessLevel, setDocAccessLevel] = useState<string>("open");
-  const [showAccessMenu, setShowAccessMenu] = useState(false);
   const [orderMap, setOrderMap] = useState<OrderMap>({});
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
