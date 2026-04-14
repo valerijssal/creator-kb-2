@@ -139,7 +139,7 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         </div>
       </header>
 
-      <main style={{ maxWidth: '1000px', margin: '0 auto', padding: '48px 40px' }}>
+      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 40px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '28px', color: 'var(--text)' }}>{title}</h1>
         {loading ? (
           <p style={{ color: 'var(--text-muted)' }}>Loading...</p>

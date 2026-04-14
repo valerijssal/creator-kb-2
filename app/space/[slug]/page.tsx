@@ -126,7 +126,7 @@ export default function SpacePage({ params }: { params: Promise<{ slug: string }
         <button onClick={() => setShowCreate(true)} style={{ marginLeft: 'auto', padding: '6px 14px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '13px', fontWeight: '500', cursor: 'pointer' }}>+ New page</button>
       </header>
 
-      <main style={{ maxWidth: '940px', margin: '0 auto', padding: '48px 40px' }}>
+      <main style={{ maxWidth: '1128px', margin: '0 auto', padding: '48px 40px' }}>
         <h1 style={{ fontSize: '26px', fontWeight: '700', marginBottom: '4px' }}>{SPACE_LABELS[slug]}</h1>
         <p style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '28px' }}>{loading ? 'Loading...' : total + ' documents'}</p>
         <input type="text" placeholder="Search documents..." value={search} onChange={e => setSearch(e.target.value)}
