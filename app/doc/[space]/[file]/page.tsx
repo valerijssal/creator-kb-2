@@ -200,8 +200,6 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
   const [orderMap, setOrderMap] = useState<OrderMap>({});
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [sidebarWidth, setSidebarWidth] = useState(280);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
