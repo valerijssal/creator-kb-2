@@ -164,12 +164,15 @@ export default function DocPage({ params }: { params: Promise<{ space: string; f
         return (
           <div key={node.file}>
             <div style={{ display: 'flex', alignItems: 'flex-start', paddingLeft: `${depth * 12}px` }}>
-              <button
-                onClick={() => { if (children.length > 0) toggleNode(node.file); }}
-                style={{ background: 'none', border: 'none', cursor: children.length > 0 ? 'pointer' : 'default', color: 'var(--text-muted)', fontSize: '10px', padding: '6px 2px 0', flexShrink: 0, width: '14px', opacity: children.length > 0 ? 1 : 0 }}
-              >
-                {isExpanded ? '▾' : '▸'}
-              </button>
+              {children.length > 0 && (
+                <button
+                  onClick={() => toggleNode(node.file)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '11px', padding: '5px 2px 0', flexShrink: 0, width: '14px' }}
+                >
+                  {isExpanded ? '▾' : '▸'}
+                </button>
+              )}
+              {children.length === 0 && <span style={{ width: '14px', flexShrink: 0, display: 'inline-block' }} />}
               <button
                 onClick={() => router.push(`/doc/${space}/${encodeURIComponent(node.file)}`)}
                 style={{ background: isCurrent ? 'var(--accent-light)' : 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: '4px 8px', borderRadius: '4px', fontSize: '13px', color: isCurrent ? 'var(--accent)' : 'var(--text)', fontWeight: isCurrent ? '600' : '400', flex: 1, lineHeight: '1.4' }}
