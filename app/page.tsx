@@ -47,7 +47,7 @@ export default function Home() {
   useEffect(() => {
     if (!query.trim()) { setResults([]); return; }
     const q = query.toLowerCase();
-    setResults(allDocs.filter(d => d.title.toLowerCase().includes(q)).slice(0, 20));
+    setResults(allDocs.filter(d => cleanTitle(d.title).toLowerCase().includes(q)).slice(0, 20));
   }, [query, allDocs]);
 
   const handleLogout = async () => {
@@ -55,7 +55,7 @@ export default function Home() {
     router.push('/login');
   };
 
-  const cleanTitle = (t: string) => t.replace(/^[^:]+:\s*/, '').trim();
+  const cleanTitle = (t: string) => t.replace(/^[^:]+:\s*/, '').replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
 
   return (
     <div style={{ minHeight: '100vh' }}>
