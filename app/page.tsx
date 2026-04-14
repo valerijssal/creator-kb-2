@@ -93,7 +93,7 @@ export default function Home() {
           <div style={{ position: 'relative', maxWidth: '520px', zIndex: 9999 }}>
             <input
               type="text"
-              placeholder={loaded ? 'Search across all 3,000+ documents...' : 'Loading...'}
+              placeholder={loaded ? '🔍  Search across all 3,000+ documents...' : 'Loading...'}
               value={query}
               onChange={e => setQuery(e.target.value)}
               disabled={!loaded}
