@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Octokit } from '@octokit/rest';
+import { notifySlack } from '@/lib/github';
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const owner = process.env.GITHUB_OWNER!;
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
           sha: treeData.sha,
         });
       }
-    } catch {}
+    } catch (err) { console.error('create error:', err); notifySlack(':warning: *KB create error:* ' + String(err)); }
     // Update titles.json
     try {
       const { data: titlesData } = await octokit.repos.getContent({ owner, repo: appRepo, path: 'public/titles.json' });
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
           sha: titlesData.sha,
         });
       }
-    } catch {}
+    } catch (err) { console.error('create error:', err); notifySlack(':warning: *KB create error:* ' + String(err)); }
     return NextResponse.json({ success: true, fileName, path });
   } catch (err) {
     console.error('Create file error:', err);

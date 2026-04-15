@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSpaceFiles, getFileContent, updateFileContent, deleteFile, moveFile, getAppFileContent, updateAppFileContent, SPACES } from '@/lib/github';
+import { notifySlack } from '@/lib/github';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -51,7 +52,7 @@ export async function DELETE(request: NextRequest) {
         await updateAppFileContent('public/titles.json', JSON.stringify(titles, null, 2), titlesFile.sha, `Remove ${fileName} from titles`);
       }
     }
-  } catch {}
+  } catch (err) { console.error('files error:', err); notifySlack(':warning: *KB files error:* ' + String(err)); }
   try {
     const treeFile = await getAppFileContent('public/tree.json');
     if (treeFile) {
@@ -65,7 +66,7 @@ export async function DELETE(request: NextRequest) {
       }
       if (changed) await updateAppFileContent('public/tree.json', JSON.stringify(tree, null, 2), treeFile.sha, `Remove ${fileName} from tree`);
     }
-  } catch {}
+  } catch (err) { console.error('files error:', err); notifySlack(':warning: *KB files error:* ' + String(err)); }
 
   return NextResponse.json({ success: true });
 }

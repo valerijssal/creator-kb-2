@@ -150,3 +150,15 @@ export function fileNameToTitle(fileName: string): string {
 export function slugToPath(spaceSlug: string, fileName: string): string {
   return `${SPACES[spaceSlug]}/${fileName}`;
 }
+
+export async function notifySlack(message: string) {
+  const url = process.env.SLACK_WEBHOOK_URL;
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: message }),
+    });
+  } catch {}
+}

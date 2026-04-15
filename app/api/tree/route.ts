@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Octokit } from '@octokit/rest';
+import { notifySlack } from '@/lib/github';
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const owner = process.env.GITHUB_OWNER!;
@@ -28,7 +29,7 @@ async function getJson(path: string) {
   try {
     const { data } = await octokit.repos.getContent({ owner, repo: appRepo, path });
     if ('content' in data) return JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'));
-  } catch {}
+  } catch (err) { console.error('tree error:', err); notifySlack(':warning: *KB tree error:* ' + String(err)); }
   return null;
 }
 

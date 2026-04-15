@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Octokit } from '@octokit/rest';
+import { notifySlack } from '@/lib/github';
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const owner = process.env.GITHUB_OWNER!;
@@ -30,7 +31,7 @@ async function getAccess() {
     if ('content' in data) {
       return JSON.parse(Buffer.from(data.content, 'base64').toString('utf-8'));
     }
-  } catch {}
+  } catch (err) { console.error('access error:', err); notifySlack(':warning: *KB access error:* ' + String(err)); }
   return { spaces: {}, docs: {} };
 }
 
@@ -63,6 +64,7 @@ export async function PUT(request: NextRequest) {
       content: Buffer.from(JSON.stringify(updated, null, 2)).toString('base64'),
       sha,
     });
+    await notifySlack(':lock: *Access updated:* ' + JSON.stringify({ spaces, docs }));
     return NextResponse.json({ success: true });
   } catch (err) {
     return NextResponse.json({ error: 'Failed to save' }, { status: 500 });

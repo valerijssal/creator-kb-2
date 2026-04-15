@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAppFileContent, updateAppFileContent } from '@/lib/github';
+import { getAppFileContent, updateAppFileContent, notifySlack } from '@/lib/github';
 
 function getSessionLevel(request: NextRequest): string {
   const password = request.cookies.get('kb_session')?.value ?? '';
@@ -57,5 +57,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to update tree.json' }, { status: 500 });
   }
 
+  await notifySlack(':file_folder: *Page moved:* `' + file + '` to `' + (newParent || 'root') + '` in ' + space);
   return NextResponse.json({ success: true });
 }
