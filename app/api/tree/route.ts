@@ -50,12 +50,26 @@ export async function GET(request: NextRequest) {
   if (space === 'all') {
     const filtered: Record<string, unknown> = {};
     for (const [slug, pages] of Object.entries(tree)) {
-      const spaceLevel = spaceAccess[slug] ?? 'open';
-      if (!canAccess(sessionLevel, spaceLevel)) continue;
+      const sLevel = spaceAccess[slug] ?? 'open';
+      if (!canAccess(sessionLevel, sLevel)) continue;
+      const blocked = new Set<string>();
+      for (const [file] of Object.entries(pages as Record<string, unknown>)) {
+        const docLevel = docAccess[file] ?? sLevel;
+        if (!canAccess(sessionLevel, docLevel)) blocked.add(file);
+      }
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const [file, page] of Object.entries(pages as Record<string, { parent: string | null }>)) {
+          if (!blocked.has(file) && page.parent && blocked.has(page.parent)) {
+            blocked.add(file);
+            changed = true;
+          }
+        }
+      }
       const filteredPages: Record<string, unknown> = {};
       for (const [file, page] of Object.entries(pages as Record<string, unknown>)) {
-        const docLevel = docAccess[file] ?? spaceLevel;
-        if (canAccess(sessionLevel, docLevel)) filteredPages[file] = page;
+        if (!blocked.has(file)) filteredPages[file] = page;
       }
       filtered[slug] = filteredPages;
     }
@@ -65,11 +79,31 @@ export async function GET(request: NextRequest) {
   const spaceLevel = spaceAccess[space] ?? 'open';
   if (!canAccess(sessionLevel, spaceLevel)) return NextResponse.json({});
 
-  const pages = tree[space] ?? {};
-  const filtered: Record<string, unknown> = {};
-  for (const [file, page] of Object.entries(pages as Record<string, unknown>)) {
+  const pages = tree[space] ?? {} as Record<string, { file: string; title: string; parent: string | null }>;
+
+  // Step 1: Determine which pages are directly blocked
+  const blocked = new Set<string>();
+  for (const [file] of Object.entries(pages)) {
     const docLevel = docAccess[file] ?? spaceLevel;
-    if (canAccess(sessionLevel, docLevel)) filtered[file] = page;
+    if (!canAccess(sessionLevel, docLevel)) blocked.add(file);
+  }
+
+  // Step 2: Cascade — if a parent is blocked, block all descendants
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const [file, page] of Object.entries(pages as Record<string, { parent: string | null }>)) {
+      if (!blocked.has(file) && page.parent && blocked.has(page.parent)) {
+        blocked.add(file);
+        changed = true;
+      }
+    }
+  }
+
+  // Step 3: Build filtered result
+  const filtered: Record<string, unknown> = {};
+  for (const [file, page] of Object.entries(pages)) {
+    if (!blocked.has(file)) filtered[file] = page;
   }
 
   return NextResponse.json(filtered);
