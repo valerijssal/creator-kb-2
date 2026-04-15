@@ -69,10 +69,10 @@ function RootDropZone({ isOver, isDragging }: { isOver: boolean; isDragging: boo
 }
 
 function DraggableItem({
-  node, depth, isAdmin, hasChildren, isExpanded, isDropTarget, isDragging, onToggle, onClick,
+  node, depth, isAdmin, hasChildren, isExpanded, isDropTarget, isDragging, childCount, onToggle, onClick,
 }: {
   node: FlatNode; depth: number; isAdmin: boolean; hasChildren: boolean; isExpanded: boolean;
-  isDropTarget: boolean; isDragging: boolean; onToggle: () => void; onClick: () => void;
+  isDropTarget: boolean; isDragging: boolean; childCount: number; onToggle: () => void; onClick: () => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging: itemDragging } = useSortable({ id: node.file, disabled: !isAdmin });
   const style: React.CSSProperties = { transform: CSS.Translate.toString(transform), transition, opacity: itemDragging ? 0.35 : 1 };
@@ -112,7 +112,7 @@ function DraggableItem({
           <span style={{ fontSize: '13px', color: 'var(--text)', fontWeight: hasChildren ? '500' : '400' }}>{title}</span>
           {hasChildren && (
             <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: 'auto', background: 'var(--bg-3)', padding: '1px 6px', borderRadius: '10px' }}>
-              {Object.values({}).length}
+              {childCount}
             </span>
           )}
         </button>
@@ -336,7 +336,7 @@ export default function SpacePage({ params }: { params: Promise<{ slug: string }
           )}
           <DraggableItem
             node={node} depth={depth} isAdmin={isAdmin}
-            hasChildren={hasChildren} isExpanded={isExpanded} isDropTarget={isTarget} isDragging={isDragging}
+            hasChildren={hasChildren} isExpanded={isExpanded} isDropTarget={isTarget} isDragging={isDragging} childCount={nodeChildren.length}
             onToggle={() => toggleNode(node.file)}
             onClick={() => hasChildren ? toggleNode(node.file) : router.push('/doc/' + slug + '/' + encodeURIComponent(node.file))}
           />
