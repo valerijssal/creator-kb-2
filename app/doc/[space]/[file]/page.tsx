@@ -163,7 +163,7 @@ function DraggableTreeItem({
 function renderGoogleEmbeds(html: string): string {
   return html.replace(
     /\[Google Embed:\s*(https:\/\/docs\.google\.com\/[^\]]+)\]/g,
-    '<div class="google-embed" style="margin:16px 0;border-radius:8px;overflow:hidden;border:1px solid var(--border)"><iframe src="$1" width="100%" height="500" frameborder="0" allowfullscreen style="border:none;display:block;min-height:500px;"></iframe></div>'
+    '<div class="google-embed" style="margin:16px 0;border-radius:8px;overflow:hidden;border:1px solid var(--border)"><iframe src="$1" width="100%" height="800" frameborder="0" allowfullscreen style="border:none;display:block;width:100%;min-height:800px;"></iframe></div>'
   );
 }
 
